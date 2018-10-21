@@ -1,0 +1,5 @@
+{# TODO: area.mode == 2 and #}
+{% if row.visible %}
+    {# TODO: access control #}
+    <a href="{{ row.get_absolute_url }}/write/?time={{ row.time }}&page={{ page }}&reply_to={{ row.pk }}&reply_message_time={{ row.last_changed_time }}" class="warning" target="_self">reply</a>
+{% endif %}

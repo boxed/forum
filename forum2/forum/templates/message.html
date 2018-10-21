@@ -1,0 +1,55 @@
+<tr id="subject_tr{{ row.id }}" class="message {{ currentuser_or_otheruser }} level{{ row.indent }}" xmlns:ww="http://www.w3.org/1999/XSL/Transform">
+	{# message subject line #}
+  <td colspan="5" style="padding-left: {{ row.indent_px }}px;" class="{{ currentuser_or_otheruser }}">
+
+		<div class="subject">
+	
+			{# if text archive #}
+			{% if area_mode == 1 %}
+				<span class="label">{{ row.subject }}<br />
+				{{ row.noWords }}</span> words
+
+			{# if normal flat or threaded area #}
+			{% else %}
+				<span class="label">{{ row.subject }}</span>
+			{% endif %}
+
+			{# written by #}
+            - <a href="">{{ row.user }}</a>
+
+			{# first new anchor #}
+			{% if first_new_pk == row.pk %}
+                <a name="firstnew" id="firstnew" ></a>
+			{% endif %}
+
+            <a name="{{ row.pk }}"></a>
+		</div>
+  </td>
+  <td valign="top" class="right-margin-top {{ currentuser_or_otheruser }}">
+
+    {# time #}
+    <div>
+    	<span class="time">{{ row.timecreated }}</span>&nbsp;
+    </div>
+
+  </td>
+</tr>
+<tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
+	{# message body #}
+  <td colspan="5" style="padding-left: {{ row.indent_px }}px;" class="body {{ currentuser_or_otheruser }}">
+    <div class="innerbody">{{ row.body }}&nbsp;</div>
+		<br />
+		{% if row.body %}<br />{% endif %}
+  </td>
+  <td valign="top" class="right-margin {{ currentuser_or_otheruser }}">
+		<div>
+			{% include "bits/reply.html" %}<br>
+			{% include "bits/edit.html" %}
+			{% include "bits/unread_from_here.html" %}
+            <a href="?unread_from_here={{ row.last_changed_time }}&page={{ page }}">unread&nbsp;from&nbsp;here</a><br/>
+
+			{% include "bits/del.html" %}
+			{% include "bits/deleted.html" %}
+		</div>
+  </td>
+</tr>

@@ -1,0 +1,5 @@
+{%  if row.visible %}
+	{%  if can_delete %}
+        <a href="{{ row.get_absolute_url }}/delete/?time={{ row.time }}&page={{ page }}" class="warning" target="_self">del</a>
+	{% endif %}
+{% endif %}

@@ -1,0 +1,3 @@
+{% if row.editable %}
+    <a href="{{ row.get_absolute_url }}/edit/?time={{ row.time }}&page={{ page }}" class="warning" target="_self">edit</a>
+{% endif %}
