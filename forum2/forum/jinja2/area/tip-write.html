@@ -1,0 +1,90 @@
+{% include "htmlhead.html" %}
+{% if replyMessageID != -1 %}
+	{% include "write.html" %}
+{% else %}
+			<title>{{ area.name }} - SKForum</title>
+			<link rel="stylesheet" type="text/css" href="<ww:url value="/forum.css"/>"/>
+		</head>
+		<base target="_blank"/>
+		<body onload="document.f.description.focus()">
+			<center class="block">- <span class="label">{{ area.name }}</span> - {% if replyMessage %}<ww:text name="reply"/>{% else %}<ww:text name="speak_up"/>{% endif %} -</center>
+			<sk:hr/>
+
+			<div id="content">
+
+			{% if hasErrorMessages %}
+				<ww:iterator value="errorMessages">
+					{{ . }}<br />
+				</ww:iterator>
+			{% endif %}
+
+			<br />
+
+			{% if warning %}
+				<span class="warning">{{ warning }}</span>
+			{% endif %}
+
+			{% if hasErrors %}
+				<ww:iterator value="errors">
+					{{ . }}<br />
+				</ww:iterator>
+			{% endif %}
+
+			<center>
+				{% if replyMessage %}
+					<ww:text name="reply_to"/>
+				{% endif %}
+				{% if previousMessage %}
+					<ww:text name="previous_message"/>
+				{% endif %}
+			</center>
+
+			{% if replyMessage %}
+				<sk:hr/>
+			{% endif %}
+
+			{% if message %}
+				<ww:focus value="message">
+					<table align="center" class="areatable">
+						<ww:include value="messageView"/>
+					</table>
+				</ww:focus>
+			{% endif %}
+
+			<form method="post" name="f" action="{{ actionName }}.action#firstnew" target="_self">
+				{% if areaID != -1 %}<input type="hidden" name="areaID" value="{{ areaID }}" />{% endif %}
+				{% if messageID != -1 %}<input type="hidden" name="messageID" value="{{ messageID }}" />{% endif %}
+				{% if replyMessageID != -1 %}<input type="hidden" name="replyMessageID" value="{{ replyMessageID }}" />{% endif %}
+				{% if replyMessageTime != -1 %}<input type="hidden" name="replyMessageTime" value="{{ replyMessageTime }}" />{% endif %}
+				{% if time != -1 %}<input type="hidden" name="time" value="{{ time }}" />{% endif %}
+				<table class="widetable">
+					<ww:textfield name="genre" 	label="text(genre)" />
+					<ww:textfield name="title" 	label="text(title)" />
+					<ww:textarea name="tip" 		label="text(tip)" rows="10" />
+					<ww:textfield name="rating" 	label="text(rating)" />
+					<tr>
+						<td></td>
+						<td>
+							<input id="post" type="submit" name="command" value="post" accesskey="P" class="button"/>
+							<input type="submit" name="command" value="preview" class="button"/>
+							<select name="postMode">
+								<option label="<ww:text name="post_mode.html"/>" value="html"{% if postMode == html %} selected="selected" {% endif %}><ww:text name="post_mode.html"/></option>
+								<option label="<ww:text name="post_mode.text"/>" value="text"{% if postMode == text %} selected="selected" {% endif %}><ww:text name="post_mode.text"/></option>
+							</select>
+						</td>
+					</tr>
+				</table>
+			</form>
+
+			{% if preview %}
+				<sk:hr/>
+				<ww:text name="preview"/>:
+				<ww:focus value="preview">
+					<table align="center" class="areatable">
+						<ww:include value="messageView"/>
+					</table>
+				</ww:focus>
+			{% endif %}
+			</div>
+	{% include "htmlfoot.html" %}
+{% endif %}

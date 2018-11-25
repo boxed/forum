@@ -1,0 +1,62 @@
+<center id="area-head" class="block">
+	<div id="area-head-block1">
+		<span class="label {% if unread %}unread{% else %}odd{% endif %}{% if area.description %} moreinfo{% endif %}"
+			{% if area.description %}OnMouseOver="show(tooltipArea{{ area.id }}top, inline);" OnMouseOut="hide(tooltipArea{{ area.id }});"{% endif %}>
+			<div id="tooltipArea{{ area.id }}top" class="tooltip" OnMouseOut="hide(tooltipArea{{ area.id }});"><span class="label">{{ area.name }}</span><p></p><sk:pre>{{ area.description }}</sk:pre></div>
+			{{ area.name }}
+		</span>
+
+		{# subscription status #}
+		{% if is_subscribed %}
+			<a href="/hotlist.Remove.action">-</a>
+		{% else %}
+			<a href="/hotlist.Add.action">+</a>
+		{% endif %}
+
+		{# faq #}
+		[<a href="/faq.html?topic=areas" target="_self">?</a>]
+
+		{# show hidden #}
+		{% if showHidden == false %}
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time=time&page=pageID&showHidden=true" name="show_deleted" target="_self" anchor="firstnew">show deleted</a> ]
+		{% else %}
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time=time&page=pageID&showHidden=false" name="hide_deleted" target="_self" anchor="firstnew">show hidden</a> ]
+		{% endif %}
+
+		{# keep unread #}
+		{% if showingUnread %}
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&setTime=time&page=pageID" name="keep_unread" target="_self" anchor="firstnew">keep unread</a> ]
+		{% endif %}
+
+		{# search #}
+		[ <a href="area.Search.action" name="search" target="_self">search</a> ]
+
+		<ww:text name="page"/> {% if start_page != page %}{{ start_page }}-{% endif %}{{ page }}/{{ pages }}
+
+		{# write #}
+		<sk:areaaccess access="add message" areagroup="area/areaGroupID">
+			- <a href="area.WriteMessage.action&time=time" name="speak_up" target="_self">speak up</a>
+		</sk:areaaccess>
+
+		{% if start_page != 1 or page != pages %}
+			<img src="/static/img/color.gif" width="100%" height="13" alt="---">
+		{% endif %}
+	</div>
+
+	<div id="area-head-block2">
+		{# first & prev #}
+		{% if previous %}
+			[ <a href="/areas/{{ area.pk }}/?showHidden=showHidden&page=0&time=time" name="first" target="_self" anchor="firstnew"><< first</a> ]
+
+			[ <a href="/areas/{{ area.pk }}/?showHidden=showHidden&page=prevPage&time=time" name="prev" target="_self" anchor="firstnew">< prev</a> ]
+		{% endif %}
+
+		{# next & latest #}
+		{% if next %}
+			[ <a href="/areas/{{ area.pk }}/?showHidden=showHidden&page=nextPage&time=time" name="next" target="_self" anchor="firstnew">next ></a> ]
+
+			[ <a href="/areas/{{ area.pk }}/?showHidden=showHidden&page=lastPage&time=time" name="latest" target="_self" anchor="firstnew">latest >></a> ]
+		{% endif %}
+	</div>
+
+</center>

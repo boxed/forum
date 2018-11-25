@@ -1,0 +1,60 @@
+{% if currentUser.id == ownerID %}
+	{% set currentUserCSS = currentuser %}
+{% else %}
+	{% set currentUserCSS = otheruser %}
+{% endif %}
+
+<tr id="subject_tr{{ id }}" class="message {{ currentUserCSS }} level{{ indent }}">
+	{# message subject line #}
+    <td colspan="5" style="padding-left: {{ row.indent_px }}px;" class="{{ currentUserCSS }}">
+
+		<div class="subject{{ bound_row.unread_css_class.value }}">
+	
+			{# if text archive #}
+			{% if area.mode == 1 %}
+				<span class="label">{{ subject }}<br />
+				{{ noWords }}</span> words
+			{% endif %}
+
+			{# if normal flat or threaded area #}
+			{% else %}
+				<span class="label">{{ subject }}</span>
+			{% endif %}
+
+			{# written by #}
+			- <sk:user value="ownerID" /> 
+
+			{# first new anchor #}
+			{% if areaInfo.firstnewID == id %}
+				<a name="firstnew" id="firstnew" />
+			{% endif %}
+
+			<a name="{{ id }}" />
+		</div>
+    </td>
+    <td valign="top" class="right-margin-top {{ currentUserCSS }}{{ bound_row.unread_css_class.value }}">
+
+        {# time #}
+		<div>
+        	<span class="time"><ww:date value="timecreated"/></span>&nbsp;
+		</div>
+
+    </td>
+</tr>
+<tr id="body_tr{{ id }}" class="message level{{ indent }}">
+	{# message body #}
+    <td colspan="5" style="padding-left: {{ row.indent_px }}px;" class="body {{ currentUserCSS }}">
+        <div class="innerbody{{ bound_row.unread_css_class.value }}"><sk:pre>{{ body }}</sk:pre>&nbsp;</div>
+		<br />
+		{% if ...not bound_row.body.value == false %}<br />{% endif %}
+    </td>
+    <td valign="top" class="right-margin {{ currentUserCSS }}{{ bound_row.unread_css_class.value }}">
+		<div>
+			{% include "bits/reply.html" %}
+			{% include "bits/edit.html" %}
+			{% include "bits/unread_from_here.html" %}
+			{% include "bits/del.html" %}
+			{% include "bits/deleted.html" %}
+		</div>
+    </td>
+</tr>

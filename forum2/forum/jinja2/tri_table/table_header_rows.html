@@ -1,0 +1,17 @@
+<thead>
+    {% for headers in table.header_levels %}
+        <tr>
+            {% for header in headers %}
+                    <th{% if header.title %} title="{{ header.title }}"{% endif %}{% if header.colspan %} colspan="{{ header.colspan }}"{% endif %} class="{{ header.render_css_class }}">
+                        {% if header.url %}
+                            <a href="{{ header.url }}">
+                        {% endif %}
+                        {{ header.display_name|safe }}
+                        {% if header.url %}
+                            </a>
+                        {% endif %}
+                    </th>
+            {% endfor %}
+        </tr>
+    {% endfor %}
+</thead>

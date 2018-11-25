@@ -52,7 +52,6 @@ input, select, option
 	width: 300px;
 	font-size: 9pt;
 	font-family: tahoma, arial, sans-serif;
-	border: 1px solid #7B3D8E;
 }
 
 input:focus
@@ -78,12 +77,8 @@ textarea:focus
 table.mainmenu
 {
   margin: 0;
-  border-left: solid Black;
-  border-right: solid Black;
-  border-top: solid Black;
-  border-bottom: solid Black;
-  border: 0 solid Black;
-  padding: 0;
+	border: 0 solid Black;
+	padding: 0;
 }
 
 .warning
@@ -117,13 +112,13 @@ table.mainmenu
 .level0 .subject { border-left: 2px solid #2E0537;}
 .level0 .body { border-left: 2px solid #2E0537;}
 
-.message td {	padding: 0px; }
+.message td {	padding: 0; }
 
 .message .subject { border-top: 2px solid black;}
 .message .right-margin-top { border-top: 2px solid black;}
-.message td div {	padding-left: 2px; padding-right: 2px; margin: 0px; }
-.message .right-margin div { border-top: 0px; }
-img{ border : 0px; 	}
+.message td div {	padding-left: 2px; padding-right: 2px; margin: 0; }
+.message .right-margin div { border-top: 0; }
+img{ border : 0; 	}
 
 
 a:link{color: #A150B9; text-decoration:none; }
@@ -182,7 +177,6 @@ label
 {
   padding: 5px;
   font-weight: bold;
-  cursor: pointer;
   cursor: hand;
 }
 form input
@@ -235,14 +229,14 @@ select.month option
 ul.menu
 {
   list-style-type: none;
-	margin: 0px;
-	padding: 0px;
+	margin: 0;
+	padding: 0;
 	width: 100px;
 }
 
 ul.menu li a
 {
-	padding: 0px;
+	padding: 0;
 	display: block;
 	width: 100px;
 }

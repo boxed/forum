@@ -1,0 +1,58 @@
+{% include "htmlhead.html" %}
+        <title>{{ area.name }}</title>
+        <link rel="stylesheet" type="text/css" href="<ww:url value="/forum.css"/>"/>
+    	<base target="_blank"/>
+    </head>
+    <body<sk:refreshcontents/>>
+
+		<div id="area-head-top">
+			{% include "area-head.html" %}
+		</div>
+		<!--
+		{%
+		net.killingar.forum.internal.managers.AreaManager areamgr = (net.killingar.forum.internal.managers.AreaManager)manager.getManager("net.killingar.forum.internal.managers.AreaManager");
+		
+		%}
+		{%= AccessLevel.toString(areamgr.getUserAccess(manager.getUserID(), 3L)) %}
+		{%= AccessLevel.toString(manager.getUserAccess(manager.getUserID())) %}
+		-->
+
+        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+
+		<div id="content">
+
+		<table cellpadding="0" cellspacing="0" id="firstnewtable" align="center" class="areatable" border="0">
+			<ww:iterator value="messages" status="status">
+				{% if item %}
+					<ww:focus value="item">
+						<!--<ww:include value="messageView"/>-->
+						{% if messageView == default-message.html %}
+							{% include "default-message.html" %}
+						{% endif %}
+						{% if messageView == link-message.html %}
+							{% include "link-message.html" %}
+						{% endif %}
+						{% if messageView == picture-message.html %}
+							{% include "picture-message.html" %}
+						{% endif %}
+						{% if messageView == quote-message.html %}
+							{% include "quote-message.html" %}
+						{% endif %}
+						{% if messageView == tip-message.html %}
+							{% include "tip-message.html" %}
+						{% endif %}
+					</ww:focus>
+				{% endif %}
+			</ww:iterator>
+		</table>
+
+		</div>
+
+        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+
+		{% set tooltipSuffix = bottom %}
+		<div id="area-head-bottom">
+			{% include "area-head.html" %}
+		</div>
+
+{% include "htmlfoot.html" %}

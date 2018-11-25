@@ -1,0 +1,21 @@
+{% include "htmlhead.html" %}
+        <title><ww:text name="confirm_message_deletion"/></title>
+        <link rel="stylesheet" type="text/css" href="<ww:url value="forum.css"/>"/>
+    </head>
+    <body>
+        <center class="block">- <ww:text name="confirm_message_deletion"/> -</center>
+        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+
+        <table align="center" class="widetable">
+            <ww:focus value="message">
+                {% include "message.html" %}
+            </ww:focus>
+        </table>
+
+        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+
+        <ww:text name="really_delete_message"/>
+        [ <a href="area.DeleteMessage.action&page=page" /><ww:param name="delete" value="true" /><ww:param name="messageID" value="message/id" /><ww:param name="time" value="time" name="affirmative" anchor="firstnew" target="_self">foo</a> ] 
+        [ <a href="/areas/{{ area.pk }}/?page=page" /><ww:param name="areaID" value="message/areaID" /><ww:param name="time" value="time" name="negative" anchor="firstnew" target="_self">foo</a> ]
+            
+{% include "htmlfoot.html" %}
