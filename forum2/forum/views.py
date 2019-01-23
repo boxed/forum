@@ -5,18 +5,21 @@ import re
 from datetime import datetime
 
 from django.db import connection, transaction
-from django.db.models import Q
+from django.db.models import Q, BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from tri.form import Form, Field
+from tri.form import Form, Field, register_field_factory
+from tri.form.views import create_or_edit_object
 from tri.struct import Struct
 from tri.table import render_table_to_response, Column
 from tri.table.templatetags.tri_table import paginator
 
-from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn
+from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn, bytes_from_int
+
+register_field_factory(BinaryField, lambda **_: None)
 
 
 def convert_jsp_to_django(request):
@@ -92,6 +95,7 @@ def convert_jsp_to_django(request):
         'del.jsp',
         'reply.jsp',
         'area-head.jsp',
+        'htmlfoot.jsp',
     ]
 
     for root, dirs, files in os.walk(os.path.join(os.path.dirname(__file__), 'jinja2')):
@@ -161,6 +165,34 @@ def parse_datetime(s):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
 
 
+def write(request, pk):
+    # TODO: fix path on save
+
+    area = Area.objects.get(pk=pk)
+    return create_or_edit_object(
+        request=request,
+        model=Message,
+        is_create=True,
+        form__field=dict(
+            body=Field.textarea,
+
+            parent=Field.hidden,
+            parent__required=False,
+
+            area__container__attrs__style__display='none',
+            area__editable=False,
+            area__choices=Area.objects.filter(pk=area.pk),
+            area__initial=area,
+
+            user__container__attrs__style__display='none',
+            user__editable=False,
+            user__choices=User.objects.filter(pk=request.user.pk),
+            user__initial=request.user,
+        ),
+        form__include=['subject', 'body', 'parent', 'area', 'user'],
+    )
+
+
 def area(request, pk):
     t = Time.objects.get_or_create(user=request.user, data=pk, system='area', defaults=dict(time=datetime(2001, 1, 1)))[0]
     user_time = t.time
@@ -180,7 +212,7 @@ def area(request, pk):
     area = Area.objects.get(pk=pk)
     # TODO: editable: if there is no reply
 
-    messages = Message.objects.filter(area__pk=pk).prefetch_related('user')
+    messages = Message.objects.filter(area__pk=pk).prefetch_related('user', 'area')
     if not show_hidden:
         messages = messages.filter(visible=True)
 
@@ -205,7 +237,7 @@ def area(request, pk):
         table__exclude=['path'],
         table__extra_fields=[
             Column(name='currentuser_or_otheruser', cell__value=lambda row, **_: 'currentuser' or 'otheruser'),
-            Column(name='unread_css_class', cell__value=lambda row, **_: ' unread' if row.time_created > user_time else ''),  #  TODO: ' unread2'
+            Column(name='unread_css_class', cell__value=lambda row, **_: ' unread' if user_time <= row.time_created else ''),  #  TODO: ' unread2'
             Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
         ],
         table__column__subject__cell__format=lambda value, **_: pre_format(value),
@@ -213,10 +245,6 @@ def area(request, pk):
         table__header__template=Template(''),
         table__row__template=get_template('area/dynamic-message.html'),
     )
-
-
-def bytes_from_int(i):
-    return i.to_bytes(length=64 // 8, byteorder='big')
 
 
 def update_batch(qs):

@@ -88,7 +88,7 @@ table.mainmenu
 
 .sorted { background-color: #333333; }
 .label { font-weight: bold; }
-.time { font-size: 7pt; }
+.time { font-size: 7pt; white-space: nowrap }
 .even { background-color: #202020; }
 .odd { background-color: transparent; }
 

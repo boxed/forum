@@ -22,6 +22,7 @@ urlpatterns = [
     path('logout/', views.logout),
     path('areas/', views.areas),
     path('areas/<pk>/', views.area),
+    path('areas/<pk>/write/', views.write),
     path('update_message_path/', views.update_message_path),
     path('import_times/', views.import_times),
 ]

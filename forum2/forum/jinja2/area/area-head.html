@@ -34,8 +34,9 @@
 		<ww:text name="page"/> {% if start_page != page %}{{ start_page }}-{% endif %}{{ page }}/{{ pages }}
 
 		{# write #}
+        {# TODO: access control #}
 		<sk:areaaccess access="add message" areagroup="area/areaGroupID">
-			- <a href="area.WriteMessage.action&time=time" name="speak_up" target="_self">speak up</a>
+			- <a href="write/" name="speak_up" target="_self">speak up</a>
 		</sk:areaaccess>
 
 		{% if start_page != 1 or page != pages %}
