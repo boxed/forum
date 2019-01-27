@@ -165,36 +165,35 @@ def parse_datetime(s):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
 
 
-def write(request, pk):
-    # TODO: fix path on save
+def write(request, area_pk):
+    parent_pk = request.GET.get('parent')
+    parent = Message.objects.get(pk=parent_pk) if parent_pk is not None else None
+    assert parent is None or parent.area_id == area_pk
 
-    area = Area.objects.get(pk=pk)
+    def non_editable_single_choice(model, pk):
+        return dict(
+            container__attrs__style__display='none',
+            editable=False,
+            choices=model.objects.filter(pk=pk) if pk is not None else model.objects.none(),
+            initial=model.objects.get(pk=pk) if pk is not None else None,
+        )
+
     return create_or_edit_object(
         request=request,
         model=Message,
         is_create=True,
         form__field=dict(
             body=Field.textarea,
-
-            parent=Field.hidden,
-            parent__required=False,
-
-            area__container__attrs__style__display='none',
-            area__editable=False,
-            area__choices=Area.objects.filter(pk=area.pk),
-            area__initial=area,
-
-            user__container__attrs__style__display='none',
-            user__editable=False,
-            user__choices=User.objects.filter(pk=request.user.pk),
-            user__initial=request.user,
+            parent=non_editable_single_choice(Message, parent_pk),
+            area=non_editable_single_choice(Area, area_pk),
+            user=non_editable_single_choice(User, request.user.pk),
         ),
         form__include=['subject', 'body', 'parent', 'area', 'user'],
     )
 
 
-def area(request, pk):
-    t = Time.objects.get_or_create(user=request.user, data=pk, system='area', defaults=dict(time=datetime(2001, 1, 1)))[0]
+def area(request, area_pk):
+    t = Time.objects.get_or_create(user=request.user, data=area_pk, system='area', defaults=dict(time=datetime(2001, 1, 1)))[0]
     user_time = t.time
     t.time = datetime.now()
     t.save()
@@ -209,10 +208,10 @@ def area(request, pk):
         t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
         user_time = t.time
 
-    area = Area.objects.get(pk=pk)
+    area = Area.objects.get(pk=area_pk)
     # TODO: editable: if there is no reply
 
-    messages = Message.objects.filter(area__pk=pk).prefetch_related('user', 'area')
+    messages = Message.objects.filter(area__pk=area_pk).prefetch_related('user', 'area')
     if not show_hidden:
         messages = messages.filter(visible=True)
 
