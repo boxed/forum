@@ -7,19 +7,21 @@ from datetime import datetime
 from django.db import connection, transaction
 from django.db.models import Q, BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from tri.form import Form, Field, register_field_factory
+from tri.form import register_field_factory, Form, Field
+from tri.form.compat import render
 from tri.form.views import create_or_edit_object
 from tri.struct import Struct
 from tri.table import render_table_to_response, Column
-from tri.table.templatetags.tri_table import paginator
 
 from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn, bytes_from_int
 
 register_field_factory(BinaryField, lambda **_: None)
+
+
+Form.Meta.base_template = 'base.html'
 
 
 def convert_jsp_to_django(request):
@@ -179,6 +181,7 @@ def write(request, area_pk):
         )
 
     return create_or_edit_object(
+        # form__base_template='base.html',
         request=request,
         model=Message,
         is_create=True,
@@ -188,25 +191,31 @@ def write(request, area_pk):
             area=non_editable_single_choice(Area, area_pk),
             user=non_editable_single_choice(User, request.user.pk),
         ),
+        render=render,
         form__include=['subject', 'body', 'parent', 'area', 'user'],
+        render__context__area=area,
+        render__context__parent=parent,
     )
 
 
 def area(request, area_pk):
     t = Time.objects.get_or_create(user=request.user, data=area_pk, system='area', defaults=dict(time=datetime(2001, 1, 1)))[0]
     user_time = t.time
-    t.time = datetime.now()
-    t.save()
     show_hidden = False
 
     def unread_from_here_href(row: Message, **_):
         GET = request.GET.copy()
         GET.setlist('unread_from_here', [row.last_changed_time.timestamp()])
-        return '?' + GET.urlencode() + "&"
+        return mark_safe('?' + GET.urlencode() + "&")
 
     if 'unread_from_here' in request.GET:
         t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
         user_time = t.time
+        print('unread_from_here', t.time)
+    else:
+        print('set read')
+        user_time = t.time
+        t.time = datetime.now()
 
     area = Area.objects.get(pk=area_pk)
     # TODO: editable: if there is no reply
@@ -215,7 +224,7 @@ def area(request, area_pk):
     if not show_hidden:
         messages = messages.filter(visible=True)
 
-    return render_table_to_response(
+    result = render_table_to_response(
         request,
         template=get_template('area.html'),
         context=dict(
@@ -226,17 +235,17 @@ def area(request, area_pk):
             showHidden=show_hidden,
             unread=True,  # TODO:
             showingUnread=True,  # TODO:
-            executionTime='',
-            start_page='???',  # TODO: implement loading multiple pages if needed to get all unread
+            time=user_time,
+            start_page='??? TODO ???',  # TODO: implement loading multiple pages if needed to get all unread
             is_subscribed=False,  # TODO:
             # TODO: this paginator stuff is totally broken
-            **paginator(dict(request=request, page=int(request.GET.get('page', '1')), pages=10, hits=False, results_per_page=40, next=None, previous=None, has_next=False, has_previous=None, show_hits=False, hit_label='')),
+            # **paginator(dict(request=request, page=int(request.GET.get('page', '1')), pages=10, hits=False, results_per_page=40, next=None, previous=None, has_next=False, has_previous=None, show_hits=False, hit_label='')),
         ),
         table__data=messages,
         table__exclude=['path'],
         table__extra_fields=[
             Column(name='currentuser_or_otheruser', cell__value=lambda row, **_: 'currentuser' or 'otheruser'),
-            Column(name='unread_css_class', cell__value=lambda row, **_: ' unread' if user_time <= row.time_created else ''),  #  TODO: ' unread2'
+            Column(name='unread_css_class', cell__value=lambda row, **_: ' unread' if user_time <= row.last_changed_time else ''),  #  TODO: ' unread2'
             Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
         ],
         table__column__subject__cell__format=lambda value, **_: pre_format(value),
@@ -244,6 +253,8 @@ def area(request, area_pk):
         table__header__template=Template(''),
         table__row__template=get_template('area/dynamic-message.html'),
     )
+    t.save()
+    return result
 
 
 def update_batch(qs):
@@ -272,7 +283,7 @@ def import_times(request):
     Time.objects.all().delete()
 
     cursor = connection.cursor()
-    cursor.execute('select user_id, data, system, time from times')
+    cursor.execute('select `user_id`, `data`, `system`, `time` from `times`')
 
     for row in cursor.fetchall():
         Time.objects.create(user_id=row[0], data=row[1], system=row[2], time=row[3])

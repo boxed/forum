@@ -15,12 +15,9 @@ from logging import addLevelName
 from tempfile import NamedTemporaryFile
 from time import time
 
-import pymysql
 from django.conf import settings
 from django.db.backends import utils as django_db_utils
 from termcolor import colored
-
-pymysql.install_as_MySQLdb()
 
 
 MEDIA_PREFIXES = '/static/'
@@ -204,7 +201,7 @@ class LoggingMiddleware:
             # Print the worst offenders
             number_of_offenders = 3
             for count, stack, sql_queries in highscore[-number_of_offenders:]:
-                if count > 2:  # 2 times is ok-ish, more is suspicious
+                if count > 3:  # 2 times is ok-ish, more is suspicious
                     sql_debug('------ %s times: -------' % count, bold=True)
                     sql_debug(stack, sql_trace=True)
                     sql_queries = set(sql_queries)

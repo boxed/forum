@@ -1,1 +1,5 @@
+django
 tri.table
+termcolor
+jinja2
+mysqlclient

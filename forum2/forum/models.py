@@ -40,6 +40,9 @@ class Area(Model):
     def __str__(self):
         return self.name
 
+    def get_absolute_url(self):
+        return f'/areas/{self.pk}/'
+
 
 class Message(models.Model):
     area = models.ForeignKey(Area, on_delete=models.PROTECT)
