@@ -1,5 +1,54 @@
 {% extends "base.html"  %}
 
+
+
 {% block content %}
-    {% include 'tri_table/list.html' %}
+{#    <body<sk:refreshcontents/>>#}
+
+		<div id="area-head-top">
+			{% include "area/area-head.html" %}
+		</div>
+
+        {% include "hr.html" %}
+
+		<div id="content">
+
+        {% include 'tri_table/list.html' %}
+
+
+		<table cellpadding="0" cellspacing="0" id="firstnewtable" align="center" class="areatable" border="0">
+			{% for message in table.data %}
+				{% if message %}
+					<ww:focus value="item">
+						<!--<ww:include value="messageView"/>-->
+{#						{% if messageView == 'default-message.html' %}#}
+{#							{% include "area/default-message.html" %}#}
+{#						{% endif %}#}
+{#						{% if messageView == 'link-message.html' %}#}
+{#							{% include "area/link-message.html" %}#}
+{#						{% endif %}#}
+{#						{% if messageView == 'picture-message.html' %}#}
+{#							{% include "area/picture-message.html" %}#}
+{#						{% endif %}#}
+{#						{% if messageView == 'quote-message.html' %}#}
+{#							{% include "area/quote-message.html" %}#}
+{#						{% endif %}#}
+{#						{% if messageView == 'tip-message.html' %}#}
+{#							{% include "area/tip-message.html" %}#}
+{#						{% endif %}#}
+					</ww:focus>
+				{% endif %}
+			{% endfor %}
+		</table>
+
+		</div>
+
+        {% include "hr.html" %}
+
+		<div id="area-head-bottom">
+			{% include "area/area-head.html" %}
+		</div>
+
+{% include "htmlfoot.html" %}
+
 {% endblock %}

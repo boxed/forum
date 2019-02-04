@@ -1,0 +1,23 @@
+{% extends "tri_form/create_or_edit_object_block.html" %}
+
+{% block before_content %}
+    <center>- {{ area }} - </center>
+
+    {% include "hr.html" %}
+
+    {% if parent %}
+        <table class="listview">
+            {% include "area/dynamic-message.html" with row=parent %}
+        </table>
+
+        {% include "hr.html" %}
+    {% endif %}
+
+{% endblock %}
+
+
+{% block after_content %}
+    <script>
+        document.getElementById("id_subject").focus();
+    </script>
+{% endblock %}

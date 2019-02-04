@@ -1,12 +1,19 @@
 <html>
 <head>
-    <title></title>
+    <title>{{ user }} - SKForum</title>
     <link rel="stylesheet" href="/static/sk.css" >
+    <script type="text/JavaScript" src="/static/forum.js"></script>
 </head>
 
 <body>
+
+{% block before_content %}{% endblock %}
+
 {% block content %}
 {% endblock %}
+
+{% block after_content %}{% endblock %}
+
 </body>
 </html>
 

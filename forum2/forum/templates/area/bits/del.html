@@ -1,0 +1,3 @@
+{%  if row.visible and not row.has_replies %}
+    <a href="{{ row.get_absolute_url }}delete/?time={{ row.last_changed_time }}&page={{ page }}" class="warning" target="_self">del</a>
+{% endif %}

@@ -24,7 +24,7 @@ register_field_factory(BinaryField, lambda **_: None)
 Form.Meta.base_template = 'base.html'
 
 
-def convert_jsp_to_django(request):
+def convert_jsp_to_django(request, input_filename):
     def convert(jsp):
         simple_replacements = [
             ('<%@page contentType="text/html;charset=UTF-8"%>', ''),
@@ -83,30 +83,17 @@ def convert_jsp_to_django(request):
             ('&areaID=area/id', '')
         ]
 
-
         for x, y in simple_replacements2:
             jsp = jsp.replace(x, y)
 
         jsp = jsp.strip()
         return jsp
 
-    whitelist = [
-        'login.jsp',
-        'dynamic-message.jsp',
-        'edit.jsp',
-        'del.jsp',
-        'reply.jsp',
-        'area-head.jsp',
-        'htmlfoot.jsp',
-    ]
-
-    for root, dirs, files in os.walk(os.path.join(os.path.dirname(__file__), 'jinja2')):
-        for filename in files:
-            if filename.endswith('.jsp') and filename not in whitelist:
-                with open(os.path.join(root, filename)) as f:
-                    jsp = f.read()
-                with open(os.path.join(root, filename.replace('.jsp', '.html')), 'w') as f:
-                    f.write(convert(jsp))
+    filename = os.path.join(os.path.dirname(__file__), 'jinja2', 'area', input_filename)
+    with open(filename) as f:
+        jsp = f.read()
+    with open(filename.replace('.jsp', '.html'), 'w') as f:
+        f.write(convert(jsp))
     return HttpResponse('OK')
 
 
@@ -171,6 +158,7 @@ def write(request, area_pk):
     parent_pk = request.GET.get('parent')
     parent = Message.objects.get(pk=parent_pk) if parent_pk is not None else None
     assert parent is None or parent.area_id == area_pk
+    area = Area.objects.get(pk=area_pk)
 
     def non_editable_single_choice(model, pk):
         return dict(
@@ -181,7 +169,6 @@ def write(request, area_pk):
         )
 
     return create_or_edit_object(
-        # form__base_template='base.html',
         request=request,
         model=Message,
         is_create=True,
@@ -195,6 +182,7 @@ def write(request, area_pk):
         form__include=['subject', 'body', 'parent', 'area', 'user'],
         render__context__area=area,
         render__context__parent=parent,
+        template_name='area/write.html',
     )
 
 
@@ -238,8 +226,6 @@ def area(request, area_pk):
             time=user_time,
             start_page='??? TODO ???',  # TODO: implement loading multiple pages if needed to get all unread
             is_subscribed=False,  # TODO:
-            # TODO: this paginator stuff is totally broken
-            # **paginator(dict(request=request, page=int(request.GET.get('page', '1')), pages=10, hits=False, results_per_page=40, next=None, previous=None, has_next=False, has_previous=None, show_hits=False, hit_label='')),
         ),
         table__data=messages,
         table__exclude=['path'],
@@ -252,6 +238,12 @@ def area(request, area_pk):
         table__column__body__cell__format=lambda value, **_: pre_format(value),
         table__header__template=Template(''),
         table__row__template=get_template('area/dynamic-message.html'),
+        table__row__attrs=lambda row, **_: dict(
+            id=row.pk,
+            class__message=True,
+            class__currentUserCSS=request.user == row.user,
+            **{f'indent_{row.indent}': True}
+        ),
     )
     t.save()
     return result

@@ -1,10 +1,4 @@
-{% if request.user == row.user %}
-	{% set currentUserCSS = 'currentuser' %}
-{% else %}
-	{% set currentUserCSS = 'otheruser' %}
-{% endif %}
-
-<tr id="subject_tr{{ row.id }}" class="message {{ currentUserCSS }} level{{ row.indent }}">
+<tr{{ row.rendered_attrs }}>
 	{# message subject line #}
     <td style="padding-left: {{ row.indent_px }}px;" onClick="collapseExpand('{{ row.id }}')">
 
@@ -32,7 +26,7 @@
 			{# deleted #}
 			{% if row.visible == false %}
 				<td class="right-margin">
-					{% include "bits/deleted.html" %}
+					{% include "area/bits/deleted.html" %}
 				</td>
 			{% endif %}
 
@@ -51,12 +45,12 @@
 
 	</td>
 	{% if area.mode == '2' %}
-		<td style="width: 40px;" valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "bits/reply.html" %}</td>
+		<td style="width: 40px;" valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/reply.html" %}</td>
     {% endif %}
 
-    <td style="width: 50px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "bits/unread_from_here.html" %}</td>
-    <td style="width: 40px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "bits/edit.html" %}&nbsp;</td>
-    <td style="width: 30px;"    valign="top" class="right-margin-top right-margin-top-left {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "bits/del.html" %}&nbsp;</td>
+    <td style="width: 50px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/unread_from_here.html" %}</td>
+    <td style="width: 40px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/edit.html" %}&nbsp;</td>
+    <td style="width: 30px;"    valign="top" class="right-margin-top right-margin-top-left {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/del.html" %}&nbsp;</td>
 </tr>
 <tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
 	{% if not bound_row.body.value == false %}
