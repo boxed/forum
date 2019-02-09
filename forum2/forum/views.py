@@ -254,7 +254,7 @@ def area(request, area_pk):
         table__attrs__align='center',
         table__attrs__class__areatable=True,
     )
-    # t.save()
+    t.save()
     return result
 
 
