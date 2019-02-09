@@ -199,11 +199,15 @@ def area(request, area_pk):
     if 'unread_from_here' in request.GET:
         t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
         user_time = t.time
+        t.save()
         print('unread_from_here', t.time)
     else:
         print('set read')
         user_time = t.time
         t.time = datetime.now()
+
+    # TODO: show first unread page, plus all other pages from that point onwards
+    # First unread message: Message.objects.filter(area__pk=4, last_changed_time__gte=t).order_by('path')[0].subject
 
     area = Area.objects.get(pk=area_pk)
     # TODO: editable: if there is no reply
@@ -238,14 +242,19 @@ def area(request, area_pk):
         table__column__body__cell__format=lambda value, **_: pre_format(value),
         table__header__template=Template(''),
         table__row__template=get_template('area/dynamic-message.html'),
-        table__row__attrs=lambda row, **_: dict(
-            id=row.pk,
+        table__row__attrs=dict(
+            id=lambda row, **_: row.pk,
             class__message=True,
-            class__currentUserCSS=request.user == row.user,
-            **{f'indent_{row.indent}': True}
+            class__current=lambda row, **_: request.user == row.user,
+            indent_0=lambda row, **_: row.indent == 0,
         ),
+        table__attrs__cellpadding='0',
+        table__attrs__cellspacing='0',
+        table__attrs__id='firstnewtable',
+        table__attrs__align='center',
+        table__attrs__class__areatable=True,
     )
-    t.save()
+    # t.save()
     return result
 
 

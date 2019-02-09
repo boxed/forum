@@ -20,7 +20,7 @@ from django.db.backends import utils as django_db_utils
 from termcolor import colored
 
 
-MEDIA_PREFIXES = '/static/'
+MEDIA_PREFIXES = ['/static/']
 
 state = threading.local()
 

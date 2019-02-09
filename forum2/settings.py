@@ -152,7 +152,7 @@ STATICFILES_DIRS = [
 
 # AUTH_USER_MODEL = 'forum.User'
 
-DATETIME_FORMAT = 'Y-m-d H:i:s.u'
+DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 DATE_FORMAT = 'Y-m-d'
 

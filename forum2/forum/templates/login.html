@@ -1,24 +1,31 @@
-{% include "htmlhead.html" %}
-        <title> - SKForum - </title>
-        <link rel="stylesheet" type="text/css" href="/static/sk.css"/>
-    </head>
-    <body onload="document.f.username.focus()">
+{% extends "base.html" %}
+
+{% block title %} - SKForum - {% endblock %}
+
+{% block content %}
         <center>login to the <a href="http://satans.killingar.net">SK</a> forum</center>
         <img src="/static/img/color.gif" width="100%" height="13" alt="---">
 
         <form method="post" name="f"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
             <input type="hidden" name="url" value="{{ url }}" />
             <table align="center" style="width: 300px;">
-                {% autoescape false %}{{ form }}{% endautoescape %}
+                {{ form }}
 
                 <tr><td colspan="2" align="right"><input type="submit" value="login" class="button" /></td></tr>
 
 				<tr><td colspan="2">&nbsp;</td></tr>
-				<tr><td colspan="2" align="right"><a href="ForgotPassword.action">forgot your password?</a></td></tr>
-				<tr><td colspan="2" align="right"><a href="CreateAccount.action">create account</a></td></tr>
+				<tr><td colspan="2" align="right"><a href="/forgot-password/">forgot your password?</a></td></tr>
+				<tr><td colspan="2" align="right"><a href="/create-account/">create account</a></td></tr>
             </table>
         </form>
 		
 		<div align="right">powered by <a href="http://soft.killingar.net?wiki=skforum">SKForum</a></div>
-		
-{% include "htmlfoot.html" %}
+        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+
+{% endblock %}
+
+{% block after_content %}
+    <script>
+        document.getElementById("id_username").focus();
+    </script>
+{% endblock %}

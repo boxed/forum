@@ -1,4 +1,4 @@
-<tr{{ row.rendered_attrs }}>
+<tr{{ bound_row.rendered_attrs }}>
 	{# message subject line #}
     <td style="padding-left: {{ row.indent_px }}px;" onClick="collapseExpand('{{ row.id }}')">
 
@@ -38,28 +38,28 @@
 			<a name="{{ row.id }}"></a>
 		</div>
     </td>
-    <td width="60" valign="top" class="right-margin-top {{ currentUserCSS }}{{ bound_row.unread_css_class.value }}">
+    <td width="60" valign="top" class="right-margin-top {{ bound_row.unread_css_class.value }}">
 
         {# time #}
         <span class="time">{{ row.time_created }}</span>
 
 	</td>
 	{% if area.mode == '2' %}
-		<td style="width: 40px;" valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/reply.html" %}</td>
+		<td style="width: 40px;" valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/reply.html" %}</td>
     {% endif %}
 
-    <td style="width: 50px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/unread_from_here.html" %}</td>
-    <td style="width: 40px;"    valign="top" class="right-margin-top {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/edit.html" %}&nbsp;</td>
-    <td style="width: 30px;"    valign="top" class="right-margin-top right-margin-top-left {{ currentUserCSS }} {{ bound_row.unread_css_class.value }}">{% include "area/bits/del.html" %}&nbsp;</td>
+    <td style="width: 50px;"    valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/unread_from_here.html" %}</td>
+    <td style="width: 40px;"    valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/edit.html" %}&nbsp;</td>
+    <td style="width: 30px;"    valign="top" class="right-margin-top right-margin-top-left  {{ bound_row.unread_css_class.value }}">{% include "area/bits/del.html" %}&nbsp;</td>
 </tr>
 <tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
 	{% if not bound_row.body.value == false %}
 		{# message body #}
-		<td style="padding-left: {{ row.indent_px }}px;" class="body {{ currentUserCSS }}" colspan="{% if not row.visible %}5{% else %}6{% endif %}">
+		<td style="padding-left: {{ row.indent_px }}px;" class="body " colspan="{% if not row.visible %}5{% else %}6{% endif %}">
 			<div class="innerbody{{ bound_row.unread_css_class.value }}"><sk:pre>{{ row.body }}</sk:pre>&nbsp;</div><br />
 		</td>
 	{% else %}
-		<td style="padding-left: {{ row.indent_px }}px;"     class="{{ currentUserCSS }}" colspan="{% if visible == false %}5{% else %}6{% endif %}">
+		<td style="padding-left: {{ row.indent_px }}px;"     class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">
 			<div class="nobody">&nbsp;</div>
 		</td>
 	{% endif %}

@@ -31,6 +31,9 @@ class Time(Model):
     class Meta:
         unique_together = ('user', 'system', 'data')
 
+    def __repr__(self):
+        return f'Time for {self.user} {self.system}/{self.data}: {self.time}'
+
 
 class Area(Model):
     name = models.CharField(max_length=255)
