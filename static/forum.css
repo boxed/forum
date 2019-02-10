@@ -105,8 +105,6 @@ table.mainmenu
 .right-margin { background-color: #202020; }
 .right-margin-top { background-color: #202020; }
 .body { background-color: transparent; }
-.unread { background-color: #470255; }
-.unread2 { background-color: #2E0537; }
 .notice { border: 2px solid #470255; }
 .notice2 { border: 2px solid #2E0537; }
 .heading { background-color: #202020; }
@@ -119,11 +117,15 @@ table.mainmenu
 
 .message td {	padding: 0px; }
 
-.message .subject { border-top: 2px solid black;}
-.message .right-margin-top { border-top: 2px solid black;}
+.message .subject { border-top: 2px solid black; padding-left: 2px;}
+.message .right-margin-top { border-top: 2px solid black; text-align: right;}
 .message td div {	padding-left: 2px; padding-right: 2px; margin: 0px; }
 .message .right-margin div { border-top: 0px; }
 img{ border : 0px; 	}
+
+
+.unread td { background-color: #470255; !important; }
+.unread2 td { background-color: #2E0537; !important; }
 
 
 a:link{color: #A150B9; text-decoration:none; }

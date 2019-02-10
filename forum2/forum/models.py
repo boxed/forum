@@ -64,9 +64,15 @@ class Message(models.Model):
     has_replies = models.BooleanField(default=False)
 
     def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
-        if self.path is None:
-            self.path = self.parent.path + bytes_from_int(self.pk)
         super(Message, self).save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
+
+        if not self.path:
+            if self.parent:
+                self.path = self.parent.path + bytes_from_int(self.pk)
+            else:
+                self.path = bytes_from_int(self.pk)
+
+            super(Message, self).save(force_insert=force_insert, force_update=force_update, using=using, update_fields=update_fields)
 
     def __repr__(self):
         return f'<Message: {self.pk}>'

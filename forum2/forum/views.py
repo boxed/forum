@@ -16,6 +16,7 @@ from tri.form.views import create_or_edit_object
 from tri.struct import Struct
 from tri.table import render_table_to_response, Column
 
+# from forum2.forum import AreaPaginator
 from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn, bytes_from_int
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -174,6 +175,7 @@ def write(request, area_pk):
         is_create=True,
         form__field=dict(
             body=Field.textarea,
+            body__required=False,
             parent=non_editable_single_choice(Message, parent_pk),
             area=non_editable_single_choice(Area, area_pk),
             user=non_editable_single_choice(User, request.user.pk),
@@ -200,14 +202,17 @@ def area(request, area_pk):
         t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
         user_time = t.time
         t.save()
-        print('unread_from_here', t.time)
     else:
-        print('set read')
         user_time = t.time
         t.time = datetime.now()
 
-    # TODO: show first unread page, plus all other pages from that point onwards
-    # First unread message: Message.objects.filter(area__pk=4, last_changed_time__gte=t).order_by('path')[0].subject
+    # TODO: show first unread page, plus all other pages from that point onwards, use paginate_by?
+    # First unread message:
+    try:
+        first_unread_message = Message.objects.filter(area__pk=4, last_changed_time__gte=t.time).order_by('path')[0]
+
+    except IndexError:
+        first_unread_message = None
 
     area = Area.objects.get(pk=area_pk)
     # TODO: editable: if there is no reply
@@ -219,6 +224,7 @@ def area(request, area_pk):
     result = render_table_to_response(
         request,
         template=get_template('area.html'),
+        # paginator=AreaPaginator(messages, per_page=40),  # TODO: uncommenting this line makes it super slow... loading all pages?
         context=dict(
             area=area,
             areaInfo=Struct(
@@ -234,8 +240,6 @@ def area(request, area_pk):
         table__data=messages,
         table__exclude=['path'],
         table__extra_fields=[
-            Column(name='currentuser_or_otheruser', cell__value=lambda row, **_: 'currentuser' or 'otheruser'),
-            Column(name='unread_css_class', cell__value=lambda row, **_: ' unread' if user_time <= row.last_changed_time else ''),  #  TODO: ' unread2'
             Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
         ],
         table__column__subject__cell__format=lambda value, **_: pre_format(value),
@@ -244,9 +248,13 @@ def area(request, area_pk):
         table__row__template=get_template('area/dynamic-message.html'),
         table__row__attrs=dict(
             id=lambda row, **_: row.pk,
+            class__indent_0=lambda row, **_: row.indent == 0,
             class__message=True,
-            class__current=lambda row, **_: request.user == row.user,
-            indent_0=lambda row, **_: row.indent == 0,
+            class__current_user=lambda row, **_: request.user == row.user,
+            class__other_user=lambda row, **_: request.user != row.user,
+            class__unread=lambda row, **_: user_time <= row.last_changed_time,
+            # TODO: unread2
+
         ),
         table__attrs__cellpadding='0',
         table__attrs__cellspacing='0',

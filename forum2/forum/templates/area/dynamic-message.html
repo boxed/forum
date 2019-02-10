@@ -1,62 +1,59 @@
 <tr{{ bound_row.rendered_attrs }}>
 	{# message subject line #}
-    <td style="padding-left: {{ row.indent_px }}px;" onClick="collapseExpand('{{ row.id }}')">
+    <td style="border-left: {{ row.indent_px }}px solid black;" onClick="collapseExpand('{{ row.id }}')" class="subject">
 
-		<div class="subject{{ bound_row.unread_css_class.value }}">
+        <span id="expandIcon{{ row.id }}">
+            -
+        </span>
+        <span id="collapseIcon{{ row.id }}" style="display:none;">
+            +
+        </span>
 
-			<span id="expandIcon{{ row.id }}">
-				-
-			</span>
-			<span id="collapseIcon{{ row.id }}" style="display:none;">
-				+
-			</span>
+        {% if area.mode == 1 %}
+                {# if text archive #}
+            <span class="label">{{ row.subject }}</span><br />
+            Words: {{  row.words }}
+        {% else %}
+                {# if normal flat or threaded area #}
+            <span class="label">{{ row.subject }}</span>
+        {% endif %}
 
-			{% if area.mode == 1 %}
-			        {# if text archive #}
-				<span class="label">{{ row.subject }}</span><br />
-				Words: {{  row.words }}
-			{% else %}
-			        {# if normal flat or threaded area #}
-				<span class="label">{{ row.subject }}</span>
-			{% endif %}
+        {# written by #}
+        - <a href="#">{{ row.user }}</a>
 
-			{# written by #}
-            - <a href="#">{{ row.user }}</a>
+        {# deleted #}
+        {% if row.visible == false %}
+            <td class="right-margin">
+                {% include "area/bits/deleted.html" %}
+            </td>
+        {% endif %}
 
-			{# deleted #}
-			{% if row.visible == false %}
-				<td class="right-margin">
-					{% include "area/bits/deleted.html" %}
-				</td>
-			{% endif %}
+        {# first new anchor #}
+        {% if areaInfo.firstnewID == row.id %}
+            <a name="firstnew" id="firstnew"></a>
+        {% endif %}
 
-			{# first new anchor #}
-			{% if areaInfo.firstnewID == row.id %}
-				<a name="firstnew" id="firstnew"></a>
-			{% endif %}
-
-			<a name="{{ row.id }}"></a>
-		</div>
+        <a name="{{ row.id }}"></a>
     </td>
-    <td width="60" valign="top" class="right-margin-top {{ bound_row.unread_css_class.value }}">
+    <td width="60" valign="top" class="right-margin-top">
 
         {# time #}
         <span class="time">{{ row.time_created }}</span>
 
 	</td>
 	{% if area.mode == '2' %}
-		<td style="width: 40px;" valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/reply.html" %}</td>
+		<td style="width: 40px;" valign="top" class="right-margin-top">{% include "area/bits/reply.html" %}</td>
     {% endif %}
 
-    <td style="width: 50px;"    valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/unread_from_here.html" %}</td>
-    <td style="width: 40px;"    valign="top" class="right-margin-top  {{ bound_row.unread_css_class.value }}">{% include "area/bits/edit.html" %}&nbsp;</td>
-    <td style="width: 30px;"    valign="top" class="right-margin-top right-margin-top-left  {{ bound_row.unread_css_class.value }}">{% include "area/bits/del.html" %}&nbsp;</td>
+    <td style="width: 50px;" valign="top" class="right-margin-top">{% include "area/bits/unread_from_here.html" %}</td>
+    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "area/bits/edit.html" %}&nbsp;</td>
+    <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "area/bits/del.html" %}&nbsp;</td>
 </tr>
 <tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
 	{% if not bound_row.body.value == false %}
 		{# message body #}
 		<td style="padding-left: {{ row.indent_px }}px;" class="body " colspan="{% if not row.visible %}5{% else %}6{% endif %}">
-			<div class="innerbody{{ bound_row.unread_css_class.value }}"><sk:pre>{{ row.body }}</sk:pre>&nbsp;</div><br />
+			<div class="innerbody"><sk:pre>{{ row.body }}</sk:pre>&nbsp;</div><br />
 		</td>
 	{% else %}
 		<td style="padding-left: {{ row.indent_px }}px;"     class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">

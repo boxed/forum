@@ -19,9 +19,9 @@
 
 		{# show hidden #}
 		{% if not showHidden %}
-			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time }}&page=pageID&showHidden=1" name="show_deleted" target="_self" anchor="firstnew">show deleted</a> ]
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp  }}&page=pageID&showHidden=1" name="show_deleted" target="_self" anchor="firstnew">show deleted</a> ]
 		{% else %}
-			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time }}&page=pageID&showHidden=0" name="hide_deleted" target="_self" anchor="firstnew">show hidden</a> ]
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp }}&page=pageID&showHidden=0" name="hide_deleted" target="_self" anchor="firstnew">show hidden</a> ]
 		{% endif %}
 
 		{# keep unread #}
@@ -48,16 +48,16 @@
 	<div id="area-head-block2">
 		{# first & prev #}
 		{% if has_previous %}
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page=0&time={{ time }}" name="first" target="_self" anchor="firstnew"><< first</a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page=0&time={{ time.timestamp }}" name="first" target="_self" anchor="firstnew"><< first</a> ]
 
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ previous }}&time={{ time }}" name="prev" target="_self" anchor="firstnew">< prev</a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ previous }}&time={{ time.timestamp }}" name="prev" target="_self" anchor="firstnew">< prev</a> ]
 		{% endif %}
 
 		{# next & latest #}
 		{% if has_next %}
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ next }}&time={{ time }}" name="next" target="_self" anchor="firstnew">next ></a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ next }}&time={{ time.timestamp }}" name="next" target="_self" anchor="firstnew">next ></a> ]
 
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ pages }}&time={{ time }}" name="latest" target="_self" anchor="firstnew">latest >></a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ pages }}&time={{ time.timestamp }}" name="latest" target="_self" anchor="firstnew">latest >></a> ]
 		{% endif %}
 	</div>
 
