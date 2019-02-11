@@ -17,6 +17,7 @@ from tri.struct import Struct
 from tri.table import render_table_to_response, Column
 
 # from forum2.forum import AreaPaginator
+from forum2.forum import AreaPaginator
 from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn, bytes_from_int
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -169,10 +170,20 @@ def write(request, area_pk):
             initial=model.objects.get(pk=pk) if pk is not None else None,
         )
 
+    def on_save(instance, **_):
+        if not instance.path:
+            if instance.parent:
+                instance.path = instance.parent.path + bytes_from_int(instance.pk)
+            else:
+                instance.path = bytes_from_int(instance.pk)
+
+            instance.save()
+
     return create_or_edit_object(
         request=request,
         model=Message,
         is_create=True,
+        on_save=on_save,
         form__field=dict(
             body=Field.textarea,
             body__required=False,
@@ -221,10 +232,12 @@ def area(request, area_pk):
     if not show_hidden:
         messages = messages.filter(visible=True)
 
+    paginator = AreaPaginator(messages, per_page=40)
+
     result = render_table_to_response(
         request,
         template=get_template('area.html'),
-        # paginator=AreaPaginator(messages, per_page=40),  # TODO: uncommenting this line makes it super slow... loading all pages?
+        paginator=paginator,
         context=dict(
             area=area,
             areaInfo=Struct(
