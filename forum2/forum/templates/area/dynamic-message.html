@@ -1,6 +1,10 @@
 <tr{{ bound_row.rendered_attrs }}>
 	{# message subject line #}
     <td style="border-left: {{ row.indent_px }}px solid black;" onClick="collapseExpand('{{ row.id }}')" class="subject">
+        {% if row.firstnew %}
+            <a name="firstnew"></a>
+        {% endif %}
+        <a name="{{ row.id }}"></a>
 
         <span id="expandIcon{{ row.id }}">
             -

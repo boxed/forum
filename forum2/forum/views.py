@@ -232,7 +232,21 @@ def area(request, area_pk):
     if not show_hidden:
         messages = messages.filter(visible=True)
 
-    paginator = AreaPaginator(messages, per_page=40)
+    paginator = AreaPaginator(messages)
+
+    def is_unread(row, **_):
+        return user_time <= row.last_changed_time
+
+    def preprocess_data(data, **_):
+        data = list(data)
+        firstnew = None
+        for d in data:
+            if is_unread(row=d):
+                firstnew = d
+                break
+        firstnew = firstnew or data[-1]
+        firstnew.firstnew = True
+        return data
 
     result = render_table_to_response(
         request,
@@ -255,6 +269,7 @@ def area(request, area_pk):
         table__extra_fields=[
             Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
         ],
+        table__preprocess_data=preprocess_data,
         table__column__subject__cell__format=lambda value, **_: pre_format(value),
         table__column__body__cell__format=lambda value, **_: pre_format(value),
         table__header__template=Template(''),
@@ -265,7 +280,7 @@ def area(request, area_pk):
             class__message=True,
             class__current_user=lambda row, **_: request.user == row.user,
             class__other_user=lambda row, **_: request.user != row.user,
-            class__unread=lambda row, **_: user_time <= row.last_changed_time,
+            class__unread=is_unread,
             # TODO: unread2
 
         ),

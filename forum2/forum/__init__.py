@@ -2,6 +2,9 @@ from django.core.paginator import Paginator as Paginator, PageNotAnInteger, Empt
 
 
 class AreaPaginator(Paginator):
+    def __init__(self, object_list, per_page=40):
+        super(AreaPaginator, self).__init__(object_list=object_list, per_page=per_page, orphans=30)
+
     def get_page(self, number):
         """
         Return a valid page, even if the page argument isn't a number or isn't
@@ -10,7 +13,7 @@ class AreaPaginator(Paginator):
         try:
             number = self.validate_number(number)
         except PageNotAnInteger:
-            number = self.num_pages
+            number = self.num_pages  # unlike default django behavior we want to go to the last page by default
         except EmptyPage:
             number = self.num_pages
         return self.page(number)
