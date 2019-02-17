@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User
+from django.core import validators
 from django.db import models
 
 
@@ -36,12 +37,22 @@ class Room(Model):
         return f'/rooms/{self.pk}/'
 
 
+class BinaryField(models.Field):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.validators.append(validators.MaxLengthValidator(self.max_length * 2))
+
+    def db_type(self, connection):
+        assert connection.settings_dict['ENGINE'] == 'django.db.backends.mysql', 'VARBINARY is mysql only'
+        return f'varbinary({str(self.max_length)})'
+
+
 class Message(models.Model):
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
     subject = models.CharField(max_length=255)
     body = models.TextField(blank=True, null=True)
     parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True)
-    path = models.BinaryField(max_length=1024, db_index=True)
+    path = BinaryField(max_length=1000, db_index=True, null=True)
     visible = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     time_created = models.DateTimeField(auto_now_add=True)

@@ -19,14 +19,14 @@
 
 		{# show hidden #}
 		{% if not showHidden %}
-			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&time={{ time  }}&page=pageID&showHidden=1#first_new" name="show_deleted" target="_self">show deleted</a> ]
+			[ <a href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&showHidden=1#first_new" name="show_deleted" target="_self">show deleted</a> ]
 		{% else %}
-			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&time={{ time }}&page=pageID&showHidden=0#first_new" name="hide_deleted" target="_self">show hidden</a> ]
+			[ <a href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&showHidden=0#first_new" name="hide_deleted" target="_self">show hidden</a> ]
 		{% endif %}
 
 		{# keep unread #}
 		{% if table.extra.unread %}
-			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&unread_from_here={{ time }}&page=pageID#first_new" name="keep_unread" target="_self">keep unread</a> ]
+			[ <a href="/rooms/{{ room.pk }}/?&unread_from_here={{ time }}&page={{ page }}#first_new" name="keep_unread" target="_self">keep unread</a> ]
 		{% endif %}
 
 		{# search #}

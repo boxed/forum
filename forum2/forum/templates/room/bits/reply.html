@@ -1,5 +1,3 @@
-{% load forum %}
-{# TODO: area.mode == 2 and #}
 {% if row.visible %}
     {# TODO: access control #}
     <a href="{{ area.get_absolute_url }}write/?time={{ row.last_changed_time }}&page={{ page }}&parent={{ row.pk }}&reply_message_time={{ row.last_changed_time }}" class="warning" target="_self">reply</a>
