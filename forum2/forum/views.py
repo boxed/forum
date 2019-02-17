@@ -4,6 +4,7 @@ import os
 import re
 from datetime import datetime
 
+#from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
 from django.db import connection, transaction
 from django.db.models import Q, BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
@@ -13,11 +14,10 @@ from django.utils.safestring import mark_safe
 from tri.form import register_field_factory, Form, Field
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
-from tri.struct import Struct
 from tri.table import render_table_to_response, Column
 
 # from forum2.forum import AreaPaginator
-from forum2.forum import AreaPaginator
+from forum2.forum import AreaPaginator, PAGE_SIZE
 from forum2.forum.models import Area, Message, User, Time, HackySingleSignOn, bytes_from_int
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -147,8 +147,9 @@ def areas(request):
 
 
 def pre_format(s):
-    s = re.sub('^( +)', lambda m: '&nbsp;' * len(m.groups()[0]), s)
-    s.replace('\n', '<br>')
+    s = s.replace('\t', '    ')
+    s = re.sub('^( +)', lambda m: '&nbsp;' * len(m.groups()[0]), s, flags=re.MULTILINE)
+    s = s.replace('\n', '<br>')
     return mark_safe(s)
 
 
@@ -178,6 +179,10 @@ def write(request, area_pk):
                 instance.path = bytes_from_int(instance.pk)
 
             instance.save()
+
+        if instance.parent and not instance.parent.has_replies:
+            instance.parent.has_replies = True
+            instance.parent.save()
 
     return create_or_edit_object(
         request=request,
@@ -209,24 +214,29 @@ def area(request, area_pk):
         GET.setlist('unread_from_here', [row.last_changed_time.timestamp()])
         return mark_safe('?' + GET.urlencode() + "&")
 
+    if 'time' in request.GET:
+        user_time = datetime.fromtimestamp(float(request.GET['time']))
+    else:
+        user_time = t.time
+        t.time = datetime.now()  # NOTE: there's a t.save() at the very bottom of this function
+
     if 'unread_from_here' in request.GET:
         t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
         user_time = t.time
         t.save()
-    else:
-        user_time = t.time
-        t.time = datetime.now()
-
-    # TODO: show first unread page, plus all other pages from that point onwards, use paginate_by?
-    # First unread message:
-    try:
-        first_unread_message = Message.objects.filter(area__pk=4, last_changed_time__gte=t.time).order_by('path')[0]
-
-    except IndexError:
-        first_unread_message = None
 
     area = Area.objects.get(pk=area_pk)
-    # TODO: editable: if there is no reply
+
+    # TODO: show many pages at once if unread? Right now we show the first unread page.
+    start_page = None
+    if 'page' not in request.GET:
+        # Find first unread page
+        try:
+            first_unread_message = Message.objects.filter(area=area, last_changed_time__gte=user_time).order_by('path')[0]
+            messages_before_first_unread = area.message_set.filter(path__lt=first_unread_message.path).count()
+            start_page = messages_before_first_unread // PAGE_SIZE
+        except IndexError:
+            pass
 
     messages = Message.objects.filter(area__pk=area_pk).prefetch_related('user', 'area')
     if not show_hidden:
@@ -237,13 +247,14 @@ def area(request, area_pk):
     def is_unread(row, **_):
         return user_time <= row.last_changed_time
 
-    def preprocess_data(data, **_):
+    def preprocess_data(data, table, **_):
         data = list(data)
         firstnew = None
         for d in data:
             if is_unread(row=d):
                 firstnew = d
                 break
+        table.extra.unread = firstnew != None
         firstnew = firstnew or data[-1]
         firstnew.firstnew = True
         return data
@@ -254,12 +265,7 @@ def area(request, area_pk):
         paginator=paginator,
         context=dict(
             area=area,
-            areaInfo=Struct(
-                firstnewID=None,  # TODO:
-            ),
             showHidden=show_hidden,
-            unread=True,  # TODO:
-            showingUnread=True,  # TODO:
             time=user_time,
             start_page='??? TODO ???',  # TODO: implement loading multiple pages if needed to get all unread
             is_subscribed=False,  # TODO:
@@ -270,8 +276,6 @@ def area(request, area_pk):
             Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
         ],
         table__preprocess_data=preprocess_data,
-        table__column__subject__cell__format=lambda value, **_: pre_format(value),
-        table__column__body__cell__format=lambda value, **_: pre_format(value),
         table__header__template=Template(''),
         table__row__template=get_template('area/dynamic-message.html'),
         table__row__attrs=dict(
@@ -289,6 +293,7 @@ def area(request, area_pk):
         table__attrs__id='firstnewtable',
         table__attrs__align='center',
         table__attrs__class__areatable=True,
+        page=start_page,
     )
     t.save()
     return result

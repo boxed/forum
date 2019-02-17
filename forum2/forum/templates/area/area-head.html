@@ -1,7 +1,6 @@
 <center id="area-head" class="block">
-    {{ time }}
 	<div id="area-head-block1">
-		<span class="label {% if unread %}unread{% else %}odd{% endif %}{% if area.description %} moreinfo{% endif %}"
+		<span class="label {% if table.extra.unread %}unread{% else %}odd{% endif %}{% if area.description %} moreinfo{% endif %}"
 			{% if area.description %}OnMouseOver="show(tooltipArea{{ area.id }}top, inline);" OnMouseOut="hide(tooltipArea{{ area.id }});"{% endif %}>
 			<div id="tooltipArea{{ area.id }}top" class="tooltip" OnMouseOut="hide(tooltipArea{{ area.id }});"><span class="label">{{ area.name }}</span><p></p><sk:pre>{{ area.description }}</sk:pre></div>
 			{{ area.name }}
@@ -19,20 +18,20 @@
 
 		{# show hidden #}
 		{% if not showHidden %}
-			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp  }}&page=pageID&showHidden=1" name="show_deleted" target="_self" anchor="firstnew">show deleted</a> ]
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp  }}&page=pageID&showHidden=1#firstnew" name="show_deleted" target="_self">show deleted</a> ]
 		{% else %}
-			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp }}&page=pageID&showHidden=0" name="hide_deleted" target="_self" anchor="firstnew">show hidden</a> ]
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&time={{ time.timestamp }}&page=pageID&showHidden=0#firstnew" name="hide_deleted" target="_self">show hidden</a> ]
 		{% endif %}
 
 		{# keep unread #}
-		{% if showingUnread %}
-			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&unread_from_here={{ time }}&page=pageID" name="keep_unread" target="_self" anchor="firstnew">keep unread</a> ]
+		{% if table.extra.unread %}
+			[ <a href="/areas/{{ area.pk }}/?areaID=area/id&unread_from_here={{ time }}&page=pageID#firstnew" name="keep_unread" target="_self">keep unread</a> ]
 		{% endif %}
 
 		{# search #}
 		[ <a href="area.Search.action" name="search" target="_self">search</a> ]
 
-		<ww:text name="page"/> {% if start_page != page %}{{ start_page }}-{% endif %}{{ page }}/{{ pages }}
+		Page {{ page }}/{{ pages }}
 
 		{# write #}
         {# TODO: access control #}
@@ -48,16 +47,16 @@
 	<div id="area-head-block2">
 		{# first & prev #}
 		{% if has_previous %}
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page=0&time={{ time.timestamp }}" name="first" target="_self" anchor="firstnew"><< first</a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page=0&time={{ time.timestamp }}#firstnew" name="first" target="_self"><< first</a> ]
 
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ previous }}&time={{ time.timestamp }}" name="prev" target="_self" anchor="firstnew">< prev</a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ previous }}&time={{ time.timestamp }}#firstnew" name="prev" target="_self">< prev</a> ]
 		{% endif %}
 
 		{# next & latest #}
 		{% if has_next %}
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ next }}&time={{ time.timestamp }}" name="next" target="_self" anchor="firstnew">next ></a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ next }}&time={{ time.timestamp }}#firstnew" name="next" target="_self">next ></a> ]
 
-			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ pages }}&time={{ time.timestamp }}" name="latest" target="_self" anchor="firstnew">latest >></a> ]
+			[ <a href="/areas/{{ area.pk }}/?showHidden={{ showHidden }}&page={{ pages }}&time={{ time.timestamp }}#firstnew" name="latest" target="_self">latest >></a> ]
 		{% endif %}
 	</div>
 

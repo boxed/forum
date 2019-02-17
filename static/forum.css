@@ -358,3 +358,8 @@ ul.menu li a:hover
 
 .expand { background: url(_common/img/arrowdown.gif) no-repeat center; }
 .collapse { background: url(_common/img/arrowup.gif)  no-repeat center; }
+
+
+.paginator a {
+	padding: 10px 4px;
+}

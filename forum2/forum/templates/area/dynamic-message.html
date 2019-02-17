@@ -1,3 +1,4 @@
+{% load forum %}
 <tr{{ bound_row.rendered_attrs }}>
 	{# message subject line #}
     <td style="border-left: {{ row.indent_px }}px solid black;" onClick="collapseExpand('{{ row.id }}')" class="subject">
@@ -15,11 +16,11 @@
 
         {% if area.mode == 1 %}
                 {# if text archive #}
-            <span class="label">{{ row.subject }}</span><br />
+            <span class="label">{{ row.subject|pre }}</span><br />
             Words: {{  row.words }}
         {% else %}
                 {# if normal flat or threaded area #}
-            <span class="label">{{ row.subject }}</span>
+            <span class="label">{{ row.subject|pre }}</span>
         {% endif %}
 
         {# written by #}
@@ -54,10 +55,10 @@
     <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "area/bits/del.html" %}&nbsp;</td>
 </tr>
 <tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
-	{% if not bound_row.body.value == false %}
+	{% if row.body %}
 		{# message body #}
 		<td style="padding-left: {{ row.indent_px }}px;" class="body " colspan="{% if not row.visible %}5{% else %}6{% endif %}">
-			<div class="innerbody"><sk:pre>{{ row.body }}</sk:pre>&nbsp;</div><br />
+			<div class="innerbody">{{ row.body|pre }}&nbsp;</div><br />
 		</td>
 	{% else %}
 		<td style="padding-left: {{ row.indent_px }}px;"     class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">
