@@ -4,6 +4,7 @@ import re
 from datetime import datetime
 
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
+from django.contrib.auth import authenticate
 from django.db.models import BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
 from django.template import Template
@@ -43,10 +44,7 @@ def login(request):
             if username and password:
                 user = User.objects.get(username=username)
                 self.extra.user = user
-                x = hashlib.sha1()
-                x.update(password.encode())
-                encoded_password = base64.b64encode(x.digest()).decode()
-                if user.password == encoded_password:
+                if authenticate(request=request, username=username, password=password):
                     return True
 
             return False
@@ -101,6 +99,8 @@ def write(request, room_pk):
         if instance.parent and not instance.parent.has_replies:
             Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
+
+
     # noinspection PyShadowingNames
     def redirect(request, redirect_to, form):
         del form
@@ -112,7 +112,7 @@ def write(request, room_pk):
         is_create=True,
         on_save=on_save,
         form__field=dict(
-            body=Field.textroom,
+            body=Field.textarea,
             body__required=False,
             parent=non_editable_single_choice(Message, parent_pk),
             room=non_editable_single_choice(Room, room_pk),
@@ -177,9 +177,14 @@ def view_room(request, room_pk):
             if is_unread(row=d):
                 first_new = d
                 break
+        if first_new is None and data:
+            first_new = data[-1]
+
+        if first_new is not None:
+            # This is used by the view
+            first_new.first_new = True
+
         table.extra.unread = first_new is not None
-        first_new = first_new or data[-1]
-        first_new.first_new = True
         return data
 
     result = render_table_to_response(

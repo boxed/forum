@@ -27,7 +27,6 @@ class Time(Model):
 
 class Room(Model):
     name = models.CharField(max_length=255)
-    mode = models.CharField(max_length=255)
     description = models.TextField()
 
     def __str__(self):
@@ -56,7 +55,6 @@ class Message(models.Model):
     visible = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     time_created = models.DateTimeField(auto_now_add=True)
-    words = models.IntegerField()
 
     last_changed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
     last_changed_time = models.DateTimeField(auto_now=True)

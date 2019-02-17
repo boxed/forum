@@ -1,12 +1,12 @@
 {% extends "tri_form/create_or_edit_object_block.html" %}
 
 {% block before_content %}
-    <center>- {{ area }} - </center>
+    <center>- {{ room }} - </center>
 
     {% include "hr.html" %}
 
     {% if parent %}
-        <table class="listview">
+        <table class="listview roomtable">
             {% include "room/message.html" with row=parent %}
         </table>
 

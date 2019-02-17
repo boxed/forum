@@ -39,10 +39,7 @@
         <span class="time">{{ row.last_changed_time }}</span>
 
 	</td>
-	{% if room.mode == '2' %}
-		<td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/reply.html" %}</td>
-    {% endif %}
-
+    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/reply.html" %}</td>
     <td style="width: 50px;" valign="top" class="right-margin-top">{% include "room/bits/unread_from_here.html" %}</td>
     <td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/edit.html" %}&nbsp;</td>
     <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "room/bits/del.html" %}&nbsp;</td>
