@@ -5,6 +5,7 @@ from django.db import models
 class HackySingleSignOn(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     session_key = models.CharField(max_length=40)
+    expire_date = models.DateTimeField()
 
 
 class Model(models.Model):

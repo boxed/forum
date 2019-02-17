@@ -135,7 +135,7 @@ def login(request):
         # TODO: upgrade password hash
 
         HackySingleSignOn.objects.filter(user=form.extra.user).delete()
-        HackySingleSignOn.objects.create(user=form.extra.user, session_key=request.session.session_key)
+        HackySingleSignOn.objects.create(user=form.extra.user, session_key=request.session.session_key, expire_data=request.session.expire_date)
 
         return HttpResponse('OK')
 
