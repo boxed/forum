@@ -17,12 +17,9 @@ from django.urls import path
 import forum2.forum.views as views
 
 urlpatterns = [
-    path('convert_jsp_to_django/<str:input_filename>', views.convert_jsp_to_django),
     path('login/', views.login),
     path('logout/', views.logout),
-    path('areas/', views.areas),
-    path('areas/<int:area_pk>/', views.area),
-    path('areas/<int:area_pk>/write/', views.write),
-    path('update_message_path/', views.update_message_path),
-    path('import_times/', views.import_times),
+    path('rooms/', views.rooms),
+    path('rooms/<int:room_pk>/', views.view_room),
+    path('rooms/<int:room_pk>/write/', views.write),
 ]

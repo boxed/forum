@@ -4,9 +4,9 @@ from django.core.paginator import Paginator as Paginator, PageNotAnInteger, Empt
 PAGE_SIZE = 40
 
 
-class AreaPaginator(Paginator):
+class RoomPaginator(Paginator):
     def __init__(self, object_list):
-        super(AreaPaginator, self).__init__(object_list=object_list, per_page=PAGE_SIZE, orphans=30)
+        super(RoomPaginator, self).__init__(object_list=object_list, per_page=PAGE_SIZE, orphans=30)
 
     def get_page(self, number):
         """

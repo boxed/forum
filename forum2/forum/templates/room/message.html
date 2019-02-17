@@ -14,14 +14,7 @@
             +
         </span>
 
-        {% if area.mode == 1 %}
-                {# if text archive #}
-            <span class="label">{{ row.subject|pre }}</span><br />
-            Words: {{  row.words }}
-        {% else %}
-                {# if normal flat or threaded area #}
-            <span class="label">{{ row.subject|pre }}</span>
-        {% endif %}
+        <span class="label">{{ row.subject|pre }}</span>
 
         {# written by #}
         - <a href="#">{{ row.user }}</a>
@@ -29,13 +22,13 @@
         {# deleted #}
         {% if row.visible == false %}
             <td class="right-margin">
-                {% include "area/bits/deleted.html" %}
+                {% include "room/bits/deleted.html" %}
             </td>
         {% endif %}
 
         {# first new anchor #}
-        {% if areaInfo.firstnewID == row.id %}
-            <a name="firstnew" id="firstnew"></a>
+        {% if row.first_new %}
+            <a name="first_new" id="first_new"></a>
         {% endif %}
 
         <a name="{{ row.id }}"></a>
@@ -46,13 +39,13 @@
         <span class="time">{{ row.last_changed_time }}</span>
 
 	</td>
-	{% if area.mode == '2' %}
-		<td style="width: 40px;" valign="top" class="right-margin-top">{% include "area/bits/reply.html" %}</td>
+	{% if room.mode == '2' %}
+		<td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/reply.html" %}</td>
     {% endif %}
 
-    <td style="width: 50px;" valign="top" class="right-margin-top">{% include "area/bits/unread_from_here.html" %}</td>
-    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "area/bits/edit.html" %}&nbsp;</td>
-    <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "area/bits/del.html" %}&nbsp;</td>
+    <td style="width: 50px;" valign="top" class="right-margin-top">{% include "room/bits/unread_from_here.html" %}</td>
+    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/edit.html" %}&nbsp;</td>
+    <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "room/bits/del.html" %}&nbsp;</td>
 </tr>
 <tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
 	{% if row.body %}
@@ -61,7 +54,7 @@
 			<div class="innerbody">{{ row.body|pre }}&nbsp;</div><br />
 		</td>
 	{% else %}
-		<td style="padding-left: {{ row.indent_px }}px;"     class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">
+		<td style="padding-left: {{ row.indent_px }}px;" class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">
 			<div class="nobody">&nbsp;</div>
 		</td>
 	{% endif %}

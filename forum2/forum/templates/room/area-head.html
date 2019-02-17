@@ -1,0 +1,62 @@
+{% load forum %}
+<center id="area-head" class="block">
+	<div id="area-head-block1">
+		<span class="label {% if table.extra.unread %}unread{% else %}odd{% endif %}{% if room.description %} moreinfo{% endif %}"
+			{% if room.description %}OnMouseOver="show(tooltipArea{{ room.id }}top, inline);" OnMouseOut="hide(tooltipArea{{ room.id }});"{% endif %}>
+			<div id="tooltipArea{{ room.id }}top" class="tooltip" OnMouseOut="hide(tooltipArea{{ room.id }});"><span class="label">{{ room.name }}</span><p></p><sk:pre>{{ room.description }}</sk:pre></div>
+			{{ room.name }}
+		</span>
+
+		{# subscription status #}
+		{% if is_subscribed %}
+			<a href="/hotlist.Remove.action">-</a>
+		{% else %}
+			<a href="/hotlist.Add.action">+</a>
+		{% endif %}
+
+		{# faq #}
+		[<a href="/faq.html?topic=rooms" target="_self">?</a>]
+
+		{# show hidden #}
+		{% if not showHidden %}
+			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&time={{ time  }}&page=pageID&showHidden=1#first_new" name="show_deleted" target="_self">show deleted</a> ]
+		{% else %}
+			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&time={{ time }}&page=pageID&showHidden=0#first_new" name="hide_deleted" target="_self">show hidden</a> ]
+		{% endif %}
+
+		{# keep unread #}
+		{% if table.extra.unread %}
+			[ <a href="/rooms/{{ room.pk }}/?areaID=area/id&unread_from_here={{ time }}&page=pageID#first_new" name="keep_unread" target="_self">keep unread</a> ]
+		{% endif %}
+
+		{# search #}
+		[ <a href="room.Search.action" name="search" target="_self">search</a> ]
+
+		Page {{ page }}/{{ pages }}
+
+		{# write #}
+        {# TODO: access control #}
+        - <a href="write/?time={{ time }}" name="speak_up" target="_self">speak up</a>
+
+		{% if start_page != 1 or page != pages %}
+			{% include "hr.html" %}
+		{% endif %}
+	</div>
+
+	<div id="area-head-block2">
+		{# first & prev #}
+		{% if has_previous %}
+			[ <a href="/rooms/{{ room.pk }}/?showHidden={{ showHidden }}&page=0&time={{ time }}#first_new" name="first" target="_self"><< first</a> ]
+
+			[ <a href="/rooms/{{ room.pk }}/?showHidden={{ showHidden }}&page={{ previous }}&time={{ time }}#first_new" name="prev" target="_self">< prev</a> ]
+		{% endif %}
+
+		{# next & latest #}
+		{% if has_next %}
+			[ <a href="/rooms/{{ room.pk }}/?showHidden={{ showHidden }}&page={{ next }}&time={{ time }}#first_new" name="next" target="_self">next ></a> ]
+
+			[ <a href="/rooms/{{ room.pk }}/?showHidden={{ showHidden }}&page={{ pages }}&time={{ time }}#first_new" name="latest" target="_self">latest >></a> ]
+		{% endif %}
+	</div>
+
+</center>

@@ -2,11 +2,6 @@ from django.contrib.auth.models import User
 from django.db import models
 
 
-class HackySingleSignOn(models.Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
-    session_key = models.CharField(max_length=40)
-
-
 class Model(models.Model):
     def __repr__(self):
         return f'{type(self)}:{self}'
@@ -21,13 +16,7 @@ class Time(Model):
     time = models.DateTimeField()
 
     system = models.CharField(max_length=255)
-    # area
-    # planning
-    # welcome
-    # wiki
-    # polls
-    # tasks
-    # calendar
+
     class Meta:
         unique_together = ('user', 'system', 'data')
 
@@ -35,7 +24,7 @@ class Time(Model):
         return f'Time for {self.user} {self.system}/{self.data}: {self.time}'
 
 
-class Area(Model):
+class Room(Model):
     name = models.CharField(max_length=255)
     mode = models.CharField(max_length=255)
     description = models.TextField()
@@ -44,11 +33,11 @@ class Area(Model):
         return self.name
 
     def get_absolute_url(self):
-        return f'/areas/{self.pk}/'
+        return f'/rooms/{self.pk}/'
 
 
 class Message(models.Model):
-    area = models.ForeignKey(Area, on_delete=models.PROTECT)
+    room = models.ForeignKey(Room, on_delete=models.PROTECT)
     subject = models.CharField(max_length=255)
     body = models.TextField(blank=True, null=True)
     parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True)
@@ -67,7 +56,7 @@ class Message(models.Model):
         return f'<Message: {self.pk}>'
 
     def get_absolute_url(self):
-        return f'/areas/{self.area.pk}/message/{self.pk}/'
+        return f'/rooms/{self.room.pk}/message/{self.pk}/'
 
     class Meta:
         ordering = ('path',)

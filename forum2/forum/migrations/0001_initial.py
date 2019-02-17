@@ -32,7 +32,7 @@ class Migration(migrations.Migration):
                 ('time_created', models.DateTimeField()),
                 ('words', models.IntegerField()),
                 ('last_changed_time', models.DateTimeField()),
-                ('area', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='forum.Area')),
+                ('area', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='forum.Room')),
                 ('last_changed_by', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, related_name='+', to=settings.AUTH_USER_MODEL)),
                 ('parent', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='forum.Message')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),

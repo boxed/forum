@@ -1,8 +1,0 @@
-<%@page contentType="text/html;charset=UTF-8"%>
-<%@ taglib uri="wiki" prefix="wiki"  %><%@ taglib uri="sk-internal" prefix="sk" %><%@ taglib uri="webwork" prefix="ww" %>
-<ww:if test="indent == 0 && splitBody/param('description')">
-	<%@ include file="quote.jsp" %>
-</ww:if>
-<ww:else>
-	<%@ include file="../default-message.jsp" %>
-</ww:else>
