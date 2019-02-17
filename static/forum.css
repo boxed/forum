@@ -1,4 +1,4 @@
-body, td, th
+body, td, th, frame
 {
   color: #808080;
   font-size: 9pt;
@@ -109,7 +109,7 @@ table.mainmenu
 .notice2 { border: 2px solid #2E0537; }
 .heading { background-color: #202020; }
 
-.body .unread { background-color: transparent; }
+.body .unread,
 .body .unread2 { background-color: transparent; }
 
 .level0 .subject { border-left: 2px solid #2E0537;}

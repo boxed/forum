@@ -181,8 +181,7 @@ def write(request, area_pk):
             instance.save()
 
         if instance.parent and not instance.parent.has_replies:
-            instance.parent.has_replies = True
-            instance.parent.save()
+            Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
     return create_or_edit_object(
         request=request,
@@ -196,6 +195,7 @@ def write(request, area_pk):
             area=non_editable_single_choice(Area, area_pk),
             user=non_editable_single_choice(User, request.user.pk),
         ),
+        redirect=lambda request, redirect_to, form: HttpResponseRedirect(redirect_to + f'?time={request.GET["time"]}#firstnew'),
         render=render,
         form__include=['subject', 'body', 'parent', 'area', 'user'],
         render__context__area=area,
@@ -206,24 +206,21 @@ def write(request, area_pk):
 
 def area(request, area_pk):
     t = Time.objects.get_or_create(user=request.user, data=area_pk, system='area', defaults=dict(time=datetime(2001, 1, 1)))[0]
-    user_time = t.time
     show_hidden = False
 
     def unread_from_here_href(row: Message, **_):
         GET = request.GET.copy()
-        GET.setlist('unread_from_here', [row.last_changed_time.timestamp()])
+        GET.setlist('unread_from_here', [row.last_changed_time.isoformat()])
         return mark_safe('?' + GET.urlencode() + "&")
 
     if 'time' in request.GET:
-        user_time = datetime.fromtimestamp(float(request.GET['time']))
+        unread2_time = datetime.fromisoformat(request.GET['time'])
     else:
-        user_time = t.time
-        t.time = datetime.now()  # NOTE: there's a t.save() at the very bottom of this function
+        unread2_time = datetime.now()
 
+    # NOTE: there's a t.save() at the very bottom of this function
     if 'unread_from_here' in request.GET:
-        t.time = datetime.fromtimestamp(float(request.GET['unread_from_here']))
-        user_time = t.time
-        t.save()
+        t.time = datetime.fromisoformat(request.GET['unread_from_here'])
 
     area = Area.objects.get(pk=area_pk)
 
@@ -232,7 +229,7 @@ def area(request, area_pk):
     if 'page' not in request.GET:
         # Find first unread page
         try:
-            first_unread_message = Message.objects.filter(area=area, last_changed_time__gte=user_time).order_by('path')[0]
+            first_unread_message = Message.objects.filter(area=area, last_changed_time__gte=t.time).order_by('path')[0]
             messages_before_first_unread = area.message_set.filter(path__lt=first_unread_message.path).count()
             start_page = messages_before_first_unread // PAGE_SIZE
         except IndexError:
@@ -245,7 +242,10 @@ def area(request, area_pk):
     paginator = AreaPaginator(messages)
 
     def is_unread(row, **_):
-        return user_time <= row.last_changed_time
+        return row.last_changed_time >= t.time
+
+    def is_unread2(row, **_):
+        return row.last_changed_time >= unread2_time and not is_unread(row=row)
 
     def preprocess_data(data, table, **_):
         data = list(data)
@@ -266,8 +266,7 @@ def area(request, area_pk):
         context=dict(
             area=area,
             showHidden=show_hidden,
-            time=user_time,
-            start_page='??? TODO ???',  # TODO: implement loading multiple pages if needed to get all unread
+            time=unread2_time or t.time,
             is_subscribed=False,  # TODO:
         ),
         table__data=messages,
@@ -285,8 +284,7 @@ def area(request, area_pk):
             class__current_user=lambda row, **_: request.user == row.user,
             class__other_user=lambda row, **_: request.user != row.user,
             class__unread=is_unread,
-            # TODO: unread2
-
+            class__unread2=is_unread2,
         ),
         table__attrs__cellpadding='0',
         table__attrs__cellspacing='0',
@@ -295,6 +293,9 @@ def area(request, area_pk):
         table__attrs__class__areatable=True,
         page=start_page,
     )
+    if 'unread_from_here' not in request.GET:
+        t.time = datetime.now()
+
     t.save()
     return result
 
