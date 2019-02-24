@@ -8,9 +8,10 @@
 {#    <link rel="stylesheet" href="//cdn.rawgit.com/milligram/milligram/master/dist/milligram.min.css">#}
     <link rel="stylesheet" href="/static/forum-minimalist.css" >
     <script type="text/JavaScript" src="/static/forum.js"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 </head>
 
-<body>
+<body{% block body_attributes %}{% endblock %}>
 
 {% block before_content %}{% endblock %}
 

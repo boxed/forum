@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block body_attributes %}
+    class="form"
+{% endblock %}
+
+{% block content %}
+    <h1>Really delete this message?</h1>
+
+    <table class="listview roomtable">
+        {% include "room/message.html" with row=message %}
+    </table>
+
+    <form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <input type="hidden" name="next" value="{{ next }}">
+        <input type="submit" value="Delete">
+    </form>
+{% endblock %}

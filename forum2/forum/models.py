@@ -74,8 +74,8 @@ class Message(models.Model):
         return (len(self.path) // 8) - 1
 
     @property
-    def indent_px(self):
-        return self.indent * 40
+    def indent_rem(self):
+        return self.indent * 5 + 3
 
 
 def bytes_from_int(i):

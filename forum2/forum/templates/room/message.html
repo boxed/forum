@@ -1,6 +1,6 @@
 {% load forum %}
 <tr{{ bound_row.rendered_attrs }} id="subject_tr{{ row.id }}" class="message_row1">
-    <td style="padding-left: {{ row.indent_px }}px" onClick="collapseExpand('{{ row.id }}')" class="subject">
+    <td style="border-left: {{ row.indent_rem }}rem solid white" onClick="collapseExpand('{{ row.id }}')" class="message">
         <img class="profile_img" src="https://www.gravatar.com/avatar/03cdc3c813a8646f783f97f7c66b8f3f"/> {# hashlib.md5(email).hexdigest() #}
 
         <a href="#">{{ row.user }}</a>
@@ -9,7 +9,7 @@
     </td>
 </tr>
 <tr class="message_row2">
-    <td style="padding-left: {{ row.indent_px }}px" onClick="collapseExpand('{{ row.id }}')" class="subject">
+    <td style="border-left: {{ row.indent_rem }}rem solid white" onClick="collapseExpand('{{ row.id }}')" class="subject">
         {% if row.firstnew %}
             <a name="firstnew"></a>
         {% endif %}

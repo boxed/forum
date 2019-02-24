@@ -2,23 +2,11 @@
 
 {% block title %} - SKForum - {% endblock %}
 
+{% block body_attributes %}
+    class="form"
+{% endblock %}
+
 {% block content %}
-        <style>
-        h1, body {
-           text-align: center
-        }
-
-        input {
-            width: 100%;
-        }
-        input[type=submit] {
-            width: auto;
-        }
-
-        .wide {
-            width: 30rem;
-        }
-        </style>
         <h1>Login</h1>
 
         <form method="post" name="f"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">

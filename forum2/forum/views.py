@@ -1,5 +1,3 @@
-import base64
-import hashlib
 import re
 from datetime import datetime
 
@@ -7,13 +5,14 @@ from datetime import datetime
 from django.contrib.auth import authenticate
 from django.db.models import BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from tri.form import register_field_factory, Form, Field
+from tri.form import register_field_factory, Form, Field, Link, bool_parse
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
-from tri.table import render_table_to_response, Column, Table
+from tri.table import render_table_to_response, Column
 
 from forum2.forum import RoomPaginator, PAGE_SIZE
 from forum2.forum.models import Room, Message, User, Time, bytes_from_int
@@ -111,10 +110,12 @@ def write(request, room_pk):
         on_save=on_save,
         form__field=dict(
             text=Field.textarea,
+            text__label_template='blank.html',
             parent=non_editable_single_choice(Message, parent_pk),
             room=non_editable_single_choice(Room, room_pk),
             user=non_editable_single_choice(User, request.user.pk),
         ),
+        form__links=[Link.submit()],
         redirect=redirect,
         render=render,
         form__include=['text', 'parent', 'room', 'user'],
@@ -125,8 +126,10 @@ def write(request, room_pk):
 
 
 def view_room(request, room_pk):
+    room = get_object_or_404(Room, pk=room_pk)
+
     t = Time.objects.get_or_create(user=request.user, data=room_pk, system='room', defaults=dict(time=datetime(2001, 1, 1)))[0]
-    show_hidden = False
+    show_hidden = bool_parse(request.GET.get('show_hidden', '0'))
 
     def unread_from_here_href(row: Message, **_):
         params = request.GET.copy()
@@ -141,8 +144,6 @@ def view_room(request, room_pk):
     # NOTE: there's a t.save() at the very bottom of this function
     if 'unread_from_here' in request.GET:
         t.time = datetime.fromisoformat(request.GET['unread_from_here'])
-
-    room = Room.objects.get(pk=room_pk)
 
     # TODO: show many pages at once if unread? Right now we show the first unread page.
     start_page = None
@@ -174,14 +175,17 @@ def view_room(request, room_pk):
             if is_unread(row=d):
                 first_new = d
                 break
-        if first_new is None and data:
-            first_new = data[-1]
-
-        if first_new is not None:
-            # This is used by the view
-            first_new.first_new = True
 
         table.extra.unread = first_new is not None
+
+        first_new_or_last_message = first_new
+        if first_new_or_last_message is None and data:
+            first_new_or_last_message = data[-1]
+
+        if first_new_or_last_message is not None:
+            # This is used by the view
+            first_new_or_last_message.first_new = True
+
         return data
 
     result = render_table_to_response(
@@ -190,7 +194,7 @@ def view_room(request, room_pk):
         paginator=paginator,
         context=dict(
             room=room,
-            showHidden=show_hidden,
+            show_hidden=show_hidden,
             time=unread2_time or t.time,
             is_subscribed=False,  # TODO:
         ),
@@ -229,3 +233,16 @@ def logout(request):
     from django.contrib.auth import logout
     logout(request)
     return HttpResponseRedirect('/login/')
+
+
+def delete(request, room_pk, message_pk):
+    room = get_object_or_404(Room, pk=room_pk)
+    message = get_object_or_404(Message, pk=message_pk)
+    assert room.pk == message.room_id
+    if request.method == 'POST':
+        message.visible = False
+        message.last_changed_by = request.user
+        message.save()
+        return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#firstnew'))
+    else:
+        return render(request, template_name='delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))

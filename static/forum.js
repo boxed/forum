@@ -1,11 +1,13 @@
-function formKeyboardHandler(f, event)
-{ 
+function formKeyboardHandler(event)
+{
+	var form = event.currentTarget;
+	while (form.tagName !== 'FORM' && form.tagName != 'BODY') {
+		form = form.parentNode;
+	}
+
 	if (event.ctrlKey && 13 === event.keyCode)
 	{ 
-		if (f.post)
-			f.post.click();
-		else
-			f.submit(); 
+		form.submit();
 		return false; 
 	} 
 	return true; 

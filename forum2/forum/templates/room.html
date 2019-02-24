@@ -2,15 +2,15 @@
 
 {% block content %}
 
-    <div id="area-head-top">
-        {% include "room/area-head.html" %}
-    </div>
+    <h1>
+        {{ room.name }}
+    </h1>
 
-    {% include "hr.html" %}
+    <hr>
 
     {% include 'tri_table/list.html' %}
 
-    {% include "hr.html" %}
+    <hr>
 
     <div id="area-head-bottom">
         {% include "room/area-head.html" %}

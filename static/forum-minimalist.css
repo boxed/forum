@@ -5,10 +5,11 @@
 
 .roomtable {
     padding: 0 10px;
+    max-width: 70rem;
 }
 
 .tools {
-    margin-left: 3rem;
+    margin-left: 0.5rem;
     font-size: 80%;
 }
 
@@ -18,14 +19,57 @@
 
 .profile_img {
     border-radius: 100%;
-    display: inline-block;
     height: 2.5rem;
     float: left;
     margin-right: 0.5rem;
+    position: relative;
+    left: -0.4rem;
+    margin-left: -3rem;
+}
+
+.message {
+    padding-left: 0.5rem;
+}
+
+.unread {
+    background: #dfd0ff;
+}
+
+.unread2 {
+    background: #F7EFFF;
 }
 
 .spacer {
     height: 1rem;
+}
+
+.form input,
+.form textarea {
+    width: 100%;
+}
+.form textarea {
+    height: 30rem;
+    border: 1px solid lightgray;
+}
+.form input[type=submit] {
+    width: auto;
+}
+.form {
+    text-align: center;
+}
+
+.form form {
+    width: 50rem;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.form .links {
+    text-align: right;
+}
+
+.button-ish {
+    padding: 0.2rem 0.7rem;
 }
 
 
@@ -50,9 +94,10 @@ color: #9b4dca;
 
 
 h1, h2, h3, h4, h5, h6 {
-font-weight: 300;
-margin-bottom: 2.0rem;
-margin-top: 0;
+    font-weight: 300;
+    margin-bottom: 2.0rem;
+    margin-top: 0;
+    text-align: center;
 }
 h1 {
 font-size: 3.5rem;
@@ -104,7 +149,7 @@ line-height: 1.15;
 hr {
 border: 0;
 border-top: 0.1rem solid #f4f5f6;
-margin: 3.0rem 0;
+margin: 1.5rem 0;
 }
 
 
@@ -113,6 +158,6 @@ margin: 3.0rem 0;
 
 @media only screen and (max-device-width : 812px) {
     html {
-        font-size: 20px;
+        font-size: 8px;
     }
 }

@@ -1,16 +1,21 @@
 {% extends "tri_form/create_or_edit_object_block.html" %}
 
-{% block before_content %}
-    <center>- {{ room }} - </center>
+{% block body_attributes %}
+    class="form"
+{% endblock %}
 
-    {% include "hr.html" %}
+
+{% block before_content %}
+    <h1>{{ room }}</h1>
+
+    <hr>
 
     {% if parent %}
         <table class="listview roomtable">
             {% include "room/message.html" with row=parent %}
         </table>
 
-        {% include "hr.html" %}
+        <hr>
     {% endif %}
 
 {% endblock %}
@@ -18,6 +23,7 @@
 
 {% block after_content %}
     <script>
-        document.getElementById("id_subject").focus();
+        document.getElementById("id_text").focus();
+        document.getElementById("id_text").onkeydown = formKeyboardHandler;
     </script>
 {% endblock %}
