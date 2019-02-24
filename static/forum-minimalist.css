@@ -1,0 +1,118 @@
+.time {
+    white-space: nowrap;
+    color: lightgray;
+}
+
+.roomtable {
+    padding: 0 10px;
+}
+
+.tools {
+    margin-left: 3rem;
+    font-size: 80%;
+}
+
+.tools * {
+    margin-right: 1rem;
+}
+
+.profile_img {
+    border-radius: 100%;
+    display: inline-block;
+    height: 2.5rem;
+    float: left;
+    margin-right: 0.5rem;
+}
+
+.spacer {
+    height: 1rem;
+}
+
+
+/* Copied and modified from milligram or normalize */
+.button, button, input[type='button'], input[type='reset'], input[type='submit'] {
+    background-color: #9b4dca;
+    border: 0.1rem solid #9b4dca;
+    border-radius: .4rem;
+    color: #fff;
+    cursor: pointer;
+    display: inline-block;
+    padding: 0.2rem 2rem;
+    text-align: center;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.button.button-outline, button.button-outline, input[type='button'].button-outline, input[type='reset'].button-outline, input[type='submit'].button-outline {
+background-color: transparent;
+color: #9b4dca;
+}
+
+
+h1, h2, h3, h4, h5, h6 {
+font-weight: 300;
+margin-bottom: 2.0rem;
+margin-top: 0;
+}
+h1 {
+font-size: 3.5rem;
+line-height: 1.2;
+margin: 0.67rem 0;
+}
+
+
+body {
+color: #606c76;
+font-family: 'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif;
+font-size: 1.6rem;
+font-weight: 300;
+line-height: 1.6;
+}
+body {
+margin: 0;
+}
+
+*, *:after, *:before {
+box-sizing: inherit;
+}
+
+td, th {
+/*padding: 1.2rem 1.5rem;*/
+text-align: left;
+}
+
+table {
+border-spacing: 0;
+width: 100%;
+}
+
+a {
+color: #9b4dca;
+text-decoration: none;
+}
+
+html {
+box-sizing: border-box;
+font-size: 62.5%;
+}
+html {
+line-height: 1.15;
+-webkit-text-size-adjust: 100%;
+}
+
+
+hr {
+border: 0;
+border-top: 0.1rem solid #f4f5f6;
+margin: 3.0rem 0;
+}
+
+
+
+/* mobile specific */
+
+@media only screen and (max-device-width : 812px) {
+    html {
+        font-size: 20px;
+    }
+}

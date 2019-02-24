@@ -3,25 +3,36 @@
 {% block title %} - SKForum - {% endblock %}
 
 {% block content %}
-        <center>login to the <a href="http://satans.killingar.net">SK</a> forum</center>
-        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
+        <style>
+        h1, body {
+           text-align: center
+        }
+
+        input {
+            width: 100%;
+        }
+        input[type=submit] {
+            width: auto;
+        }
+
+        .wide {
+            width: 30rem;
+        }
+        </style>
+        <h1>Login</h1>
 
         <form method="post" name="f"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
             <input type="hidden" name="url" value="{{ url }}" />
-            <table align="center" style="width: 300px;">
+            <table align="center" class="wide">
                 {{ form }}
 
-                <tr><td colspan="2" align="right"><input type="submit" value="login" class="button" /></td></tr>
+                <tr><td colspan="2" style="text-align: right"><input type="submit" value="Login" class="button" /></td></tr>
 
 				<tr><td colspan="2">&nbsp;</td></tr>
 				<tr><td colspan="2" align="right"><a href="/forgot-password/">forgot your password?</a></td></tr>
 				<tr><td colspan="2" align="right"><a href="/create-account/">create account</a></td></tr>
             </table>
         </form>
-		
-		<div align="right">powered by <a href="http://soft.killingar.net?wiki=skforum">SKForum</a></div>
-        <img src="/static/img/color.gif" width="100%" height="13" alt="---">
-
 {% endblock %}
 
 {% block after_content %}

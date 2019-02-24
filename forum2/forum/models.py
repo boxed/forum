@@ -48,8 +48,7 @@ class BinaryField(models.Field):
 
 class Message(models.Model):
     room = models.ForeignKey(Room, on_delete=models.PROTECT)
-    subject = models.CharField(max_length=255)
-    body = models.TextField(blank=True, null=True)
+    text = models.TextField(blank=True, null=True)
     parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True)
     path = BinaryField(max_length=1000, db_index=True, null=True)
     visible = models.BooleanField(default=True)
@@ -76,7 +75,7 @@ class Message(models.Model):
 
     @property
     def indent_px(self):
-        return self.indent * 20
+        return self.indent * 40
 
 
 def bytes_from_int(i):

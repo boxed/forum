@@ -1,6 +1,6 @@
 function formKeyboardHandler(f, event)
 { 
-	if (event.ctrlKey && 13 == event.keyCode)
+	if (event.ctrlKey && 13 === event.keyCode)
 	{ 
 		if (f.post)
 			f.post.click();
@@ -44,41 +44,20 @@ function removeClassFromObject(o, cl)
 	o.className = removeClass(cl, o.className);
 }
 
-function getIndent(css)
-{
-	var s = css.split(" ");
-	for (var i = 0; i != s.length; i++)
-	{
-		if (s[i].substr(0, 5) == "level")
-			return s[i].substr(5);
-	}
-
-	return "";
-}
-
 function getIndentFromElement(e)
 {
-  // IE workaround
-	var s = e.getAttribute("class");
-	if (s == null)
-		s = e.getAttribute("className");
-
-	return getIndent(s);
+	return e.getElementsByTagName('td')[0].style.paddingLeft;
 }
 
 function collapseExpand(item)
 {
 	var element = document.getElementById("body_tr"+item);
+	var startIndent = getIndentFromElement(element);
 
-	if (element.style.display == "none") // show
+	if (element.style.display === "none") // show
 	{
-		/*document.getElementById("body_tr"+item).style.display = document.getElementById("subject_tr"+item).style.display;
-		document.getElementById("collapseIcon"+item).style.display = "inline";
-		document.getElementById("expandIcon"+item).style.display = "none";*/
-
 		var disp = document.getElementById("subject_tr"+item).style.display;
 		element.style.display = document.getElementById("subject_tr"+item).style.display;
-		var startIndent = getIndentFromElement(element);
 		for (var e = element.nextSibling; e != null; e = e.nextSibling)
 		{
 			if (e.getAttribute && getIndentFromElement(e) <= startIndent)
@@ -92,11 +71,6 @@ function collapseExpand(item)
 	}
 	else // hide
 	{
-		/*element.style.display = "none"
-		document.getElementById("collapseIcon"+item).style.display = "none";
-		document.getElementById("expandIcon"+item).style.display = "inline";*/
-
-		var startIndent = getIndentFromElement(element);
 		for (var e = element.nextSibling; e != null; e = e.nextSibling)
 		{
 			if (e.getAttribute && getIndentFromElement(e) <= startIndent)
@@ -178,7 +152,7 @@ function loadXMLDoc(url, eventHandler)
 	{
 		req = new XMLHttpRequest();
 		if (eventHandler)
-			req.onreadystatechange = function() { if (req.readyState == 4) eventHandler(req); };
+			req.onreadystatechange = function() { if (req.readyState === 4) eventHandler(req); };
 		req.open("GET", url, true);
 		req.send(null);
 	}
@@ -188,7 +162,7 @@ function loadXMLDoc(url, eventHandler)
 		req = new ActiveXObject("Microsoft.XMLHTTP");
 		if (req)
 		{
-			req.onreadystatechange = function() { if (req.readyState == 4) eventHandler(req); };
+			req.onreadystatechange = function() { if (req.readyState === 4) eventHandler(req); };
 			req.open("GET", url, true);
 			req.send();
 		}

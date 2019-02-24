@@ -1,58 +1,40 @@
 {% load forum %}
-<tr{{ bound_row.rendered_attrs }}>
-	{# message subject line #}
-    <td style="border-left: {{ row.indent_px }}px solid black;" onClick="collapseExpand('{{ row.id }}')" class="subject">
+<tr{{ bound_row.rendered_attrs }} id="subject_tr{{ row.id }}" class="message_row1">
+    <td style="padding-left: {{ row.indent_px }}px" onClick="collapseExpand('{{ row.id }}')" class="subject">
+        <img class="profile_img" src="https://www.gravatar.com/avatar/03cdc3c813a8646f783f97f7c66b8f3f"/> {# hashlib.md5(email).hexdigest() #}
+
+        <a href="#">{{ row.user }}</a>
+        {{ row.text|pre }}
+
+    </td>
+</tr>
+<tr class="message_row2">
+    <td style="padding-left: {{ row.indent_px }}px" onClick="collapseExpand('{{ row.id }}')" class="subject">
         {% if row.firstnew %}
             <a name="firstnew"></a>
         {% endif %}
         <a name="{{ row.id }}"></a>
 
-        <span id="expandIcon{{ row.id }}">
-            -
-        </span>
-        <span id="collapseIcon{{ row.id }}" style="display:none;">
-            +
-        </span>
-
-        <span class="label">{{ row.subject|pre }}</span>
-
-        {# written by #}
-        - <a href="#">{{ row.user }}</a>
-
-        {# deleted #}
-        {% if row.visible == false %}
-            <td class="right-margin">
-                {% include "room/bits/deleted.html" %}
-            </td>
-        {% endif %}
-
-        {# first new anchor #}
         {% if row.first_new %}
             <a name="first_new" id="first_new"></a>
         {% endif %}
 
         <a name="{{ row.id }}"></a>
+
+        <span class="tools">
+            {% include "room/bits/reply.html" %}
+            {% include "room/bits/unread_from_here.html" %}
+            {% include "room/bits/edit.html" %}
+            {% include "room/bits/del.html" %}
+
+            <span class="time">{{ row.last_changed_time }}</span>
+
+            <span id="expandIcon{{ row.id }}">
+            </span>
+            <span id="collapseIcon{{ row.id }}" style="display:none;">
+                &lt; collapsed! &gt;
+            </span>
+        </span>
     </td>
-    <td width="60" valign="top" class="right-margin-top">
-
-        {# time #}
-        <span class="time">{{ row.last_changed_time }}</span>
-
-	</td>
-    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/reply.html" %}</td>
-    <td style="width: 50px;" valign="top" class="right-margin-top">{% include "room/bits/unread_from_here.html" %}</td>
-    <td style="width: 40px;" valign="top" class="right-margin-top">{% include "room/bits/edit.html" %}&nbsp;</td>
-    <td style="width: 30px;" valign="top" class="right-margin-top right-margin-top-left">{% include "room/bits/del.html" %}&nbsp;</td>
 </tr>
-<tr id="body_tr{{ row.id }}" class="message level{{ row.indent }}">
-	{% if row.body %}
-		{# message body #}
-		<td style="padding-left: {{ row.indent_px }}px;" class="body " colspan="{% if not row.visible %}5{% else %}6{% endif %}">
-			<div class="innerbody">{{ row.body|pre }}&nbsp;</div><br />
-		</td>
-	{% else %}
-		<td style="padding-left: {{ row.indent_px }}px;" class="" colspan="{% if visible == false %}5{% else %}6{% endif %}">
-			<div class="nobody">&nbsp;</div>
-		</td>
-	{% endif %}
-</tr>
+<tr><td class="spacer"></td></tr>

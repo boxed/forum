@@ -13,7 +13,7 @@ from django.utils.safestring import mark_safe
 from tri.form import register_field_factory, Form, Field
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
-from tri.table import render_table_to_response, Column
+from tri.table import render_table_to_response, Column, Table
 
 from forum2.forum import RoomPaginator, PAGE_SIZE
 from forum2.forum.models import Room, Message, User, Time, bytes_from_int
@@ -99,8 +99,6 @@ def write(request, room_pk):
         if instance.parent and not instance.parent.has_replies:
             Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
-
-
     # noinspection PyShadowingNames
     def redirect(request, redirect_to, form):
         del form
@@ -112,15 +110,14 @@ def write(request, room_pk):
         is_create=True,
         on_save=on_save,
         form__field=dict(
-            body=Field.textarea,
-            body__required=False,
+            text=Field.textarea,
             parent=non_editable_single_choice(Message, parent_pk),
             room=non_editable_single_choice(Room, room_pk),
             user=non_editable_single_choice(User, request.user.pk),
         ),
         redirect=redirect,
         render=render,
-        form__include=['subject', 'body', 'parent', 'room', 'user'],
+        form__include=['text', 'parent', 'room', 'user'],
         render__context__room=room,
         render__context__parent=parent,
         template_name='room/write.html',
@@ -206,7 +203,7 @@ def view_room(request, room_pk):
         table__header__template=Template(''),
         table__row__template=get_template('room/message.html'),
         table__row__attrs=dict(
-            id=lambda row, **_: row.pk,
+            # id=lambda row, **_: row.pk,
             class__indent_0=lambda row, **_: row.indent == 0,
             class__message=True,
             class__current_user=lambda row, **_: request.user == row.user,
