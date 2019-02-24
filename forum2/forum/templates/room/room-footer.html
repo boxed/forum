@@ -1,6 +1,6 @@
 {% load forum %}
-<center id="area-head" class="block">
-	<div id="area-head-block1">
+<center id="room-footer" class="block">
+	<div id="room-footer-block1">
 		{% if is_subscribed %}
 			<a href="/hotlist.Remove.action">Unsubscribe</a>
 		{% else %}
@@ -20,7 +20,7 @@
         <a class="button button-outline" href="write/?time={{ time }}" name="speak_up" target="_self">New message</a>
 	</div>
 
-	<div id="area-head-block2">
+	<div id="room-footer-block2">
 		{% if has_previous %}
 			<a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page=0&time={{ time }}#first_new" name="first" target="_self"><< first</a>
 
