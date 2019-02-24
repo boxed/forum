@@ -3,7 +3,7 @@
 from django.conf import settings
 from django.db import migrations, models
 import django.db.models.deletion
-import forum2.forum.models
+import forum.models
 
 
 class Migration(migrations.Migration):
@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('subject', models.CharField(max_length=255)),
                 ('body', models.TextField(blank=True, null=True)),
-                ('path', forum2.forum.models.BinaryField(db_index=True, max_length=1000, null=True)),
+                ('path', forum.models.BinaryField(db_index=True, max_length=1000, null=True)),
                 ('visible', models.BooleanField(default=True)),
                 ('time_created', models.DateTimeField(auto_now_add=True)),
                 ('words', models.IntegerField()),

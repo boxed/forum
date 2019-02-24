@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'forum2.forum',
+    'forum',
     'tri.form',
     'tri.query',
     'tri.table',

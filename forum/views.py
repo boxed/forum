@@ -14,13 +14,13 @@ from tri.form.compat import render
 from tri.form.views import create_or_edit_object
 from tri.table import render_table_to_response, Column
 
-from forum2.forum import RoomPaginator, PAGE_SIZE
-from forum2.forum.models import Room, Message, User, Time, bytes_from_int
+from forum import RoomPaginator, PAGE_SIZE
+from forum.models import Room, Message, User, Time, bytes_from_int
 
 register_field_factory(BinaryField, lambda **_: None)
 
 
-Form.Meta.base_template = 'base.html'
+Form.Meta.base_template = 'forum/base.html'
 
 
 def login(request):
@@ -190,7 +190,7 @@ def view_room(request, room_pk):
 
     result = render_table_to_response(
         request,
-        template=get_template('room.html'),
+        template=get_template('forum/room.html'),
         paginator=paginator,
         context=dict(
             room=room,
@@ -205,7 +205,7 @@ def view_room(request, room_pk):
         ],
         table__preprocess_data=preprocess_data,
         table__header__template=Template(''),
-        table__row__template=get_template('room/message.html'),
+        table__row__template=get_template('forum/message.html'),
         table__row__attrs=dict(
             # id=lambda row, **_: row.pk,
             class__indent_0=lambda row, **_: row.indent == 0,

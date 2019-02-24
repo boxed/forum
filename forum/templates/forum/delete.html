@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+{% extends "forum/base.html" %}
 
 {% block body_attributes %}
     class="form"
@@ -8,7 +8,7 @@
     <h1>Really delete this message?</h1>
 
     <table class="listview roomtable">
-        {% include "room/message.html" with row=message %}
+        {% include "forum/message.html" with row=message %}
     </table>
 
     <form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
