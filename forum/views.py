@@ -15,7 +15,8 @@ from tri.form.views import create_or_edit_object
 from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
-from forum.models import Room, Message, User, Time, bytes_from_int
+from forum.models import Room, Message, User, bytes_from_int
+from unread.models import Time
 
 register_field_factory(BinaryField, lambda **_: None)
 
