@@ -11,10 +11,9 @@ class Model(models.Model):
 
 
 class SystemTime(Model):
+    system = models.CharField(max_length=255, db_index=True)
     data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
-
-    system = models.CharField(max_length=255, db_index=True)
 
     class Meta:
         unique_together = ('system', 'data')
@@ -25,13 +24,22 @@ class SystemTime(Model):
 
 class UserTime(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
+    system = models.CharField(max_length=255, db_index=True)
     data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
-
-    system = models.CharField(max_length=255, db_index=True)
 
     class Meta:
         unique_together = ('user', 'system', 'data')
 
     def __repr__(self):
         return f'UserTime for {self.user} {self.system}/{self.data}: {self.time}'
+
+
+class Subscription(Model):
+    user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
+    system = models.CharField(max_length=255, db_index=True)
+    data = models.BigIntegerField(db_index=True)
+    active = models.BooleanField(default=True)
+
+    class Meta:
+        unique_together = ('user', 'system', 'data')

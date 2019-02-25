@@ -4,7 +4,8 @@ from datetime import datetime
 #  - Subscriptions
 #    - Active
 #    - Passive
-#    -
+#  - Better name for "system"
+#  - Should systems be models in the DB and not just stringly typed?
 #  - Do I need multi level unread? Maybe just system/user is ok?
 
 # noinspection PyShadowingBuiltins
