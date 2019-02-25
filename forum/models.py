@@ -1,3 +1,6 @@
+from hashlib import md5
+from math import sqrt
+
 from django.contrib.auth.models import User
 from django.core import validators
 from django.db import models
@@ -61,7 +64,11 @@ class Message(models.Model):
 
     @property
     def indent_rem(self):
-        return self.indent * 5 + 3
+        return self.indent * 2 + 3
+
+    @property
+    def gravatar_url(self):
+        return f'https://www.gravatar.com/avatar/{md5(self.user.email.encode()).hexdigest()}?d=identicon'
 
 
 def bytes_from_int(i):

@@ -72,6 +72,11 @@
     padding: 0.2rem 0.7rem;
 }
 
+#room-footer-block .back,
+#room-footer-block .forward {
+    width: 16rem;
+    display: inline-block;
+}
 
 /* Copied and modified from milligram or normalize */
 .button, button, input[type='button'], input[type='reset'], input[type='submit'] {
@@ -148,7 +153,7 @@ line-height: 1.15;
 
 hr {
 border: 0;
-border-top: 0.1rem solid #f4f5f6;
+border-top: 0.1rem solid #e6e7e8;
 margin: 1.5rem 0;
 }
 

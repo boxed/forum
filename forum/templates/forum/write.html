@@ -23,7 +23,9 @@
 
 {% block after_content %}
     <script>
-        document.getElementById("id_text").focus();
-        document.getElementById("id_text").onkeydown = formKeyboardHandler;
+        var x = document.getElementById("id_text")
+        x.focus();
+        x.selectionStart =  x.value.length;
+        x.onkeydown = formKeyboardHandler;
     </script>
 {% endblock %}

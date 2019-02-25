@@ -10,7 +10,20 @@ class Model(models.Model):
         abstract = True
 
 
-class Time(Model):
+class SystemTime(Model):
+    data = models.BigIntegerField()
+    time = models.DateTimeField()
+
+    system = models.CharField(max_length=255)
+
+    class Meta:
+        unique_together = ('system', 'data')
+
+    def __repr__(self):
+        return f'SystemTime {self.system}/{self.data}: {self.time}'
+
+
+class UserTime(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     data = models.BigIntegerField()
     time = models.DateTimeField()
@@ -21,4 +34,4 @@ class Time(Model):
         unique_together = ('user', 'system', 'data')
 
     def __repr__(self):
-        return f'Time for {self.user} {self.system}/{self.data}: {self.time}'
+        return f'UserTime for {self.user} {self.system}/{self.data}: {self.time}'

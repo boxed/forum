@@ -1,37 +1,44 @@
 {% load forum %}
 <center id="room-footer" class="block">
-	<div id="room-footer-block1">
-		{% if is_subscribed %}
-			<a href="/hotlist.Remove.action">Unsubscribe</a>
-		{% else %}
-			<a href="/hotlist.Add.action">Subscribe</a>
-		{% endif %}
 
-		{% if not show_hidden %}
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
-		{% else %}
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&show_hidden=0#first_new" name="hide_deleted" target="_self">Hide deleted</a>
-		{% endif %}
+	<div id="room-footer-block">
+        <span class="back">
+            {% if has_previous %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page=1&time={{ time }}#first_new" name="first" target="_self">&lt;&lt; First</a>
 
-		{% if table.extra.unread %}
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?&unread_from_here={{ time }}&page={{ page }}#first_new" name="keep_unread" target="_self">Keep unread</a>
-		{% endif %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ previous }}&time={{ time }}#first_new" name="prev" target="_self">&lt; Previous</a>
+            {% endif %}
+        </span>
 
-        <a class="button button-outline" href="write/?time={{ time }}" name="speak_up" target="_self">New message</a>
-	</div>
+        <span class="tool-middle">
 
-	<div id="room-footer-block2">
-		{% if has_previous %}
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page=0&time={{ time }}#first_new" name="first" target="_self"><< first</a>
+            {% if is_subscribed %}
+                <a href="/hotlist.Remove.action">Unsubscribe</a>
+            {% else %}
+                <a href="/hotlist.Add.action">Subscribe</a>
+            {% endif %}
 
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ previous }}&time={{ time }}#first_new" name="prev" target="_self">< prev</a>
-		{% endif %}
+            {% if not show_hidden %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
+            {% else %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&show_hidden=0#first_new" name="hide_deleted" target="_self">Hide deleted</a>
+            {% endif %}
 
-		{% if has_next %}
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ next }}&time={{ time }}#first_new" name="next" target="_self">next ></a>
+            {% if table.extra.unread %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?&unread_from_here={{ time }}&page={{ page }}#first_new" name="keep_unread" target="_self">Keep unread</a>
+            {% endif %}
 
-			<a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ pages }}&time={{ time }}#first_new" name="latest" target="_self">latest >></a>
-		{% endif %}
+            <a class="button button-outline" href="write/?time={{ time }}" name="speak_up" target="_self">New message</a>
+
+        </span>
+
+        <span class="forward">
+            {% if has_next %}
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ next }}&time={{ time }}#first_new" name="next" target="_self">Next &gt;</a>
+
+                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ pages }}&time={{ time }}#first_new" name="latest" target="_self">Latest &gt;&gt;</a>
+            {% endif %}
+        </span>
 	</div>
 
 </center>

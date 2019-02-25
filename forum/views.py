@@ -16,7 +16,7 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread.models import Time
+from unread import get_time, set_time, set_time_for_system
 
 register_field_factory(BinaryField, lambda **_: None)
 
@@ -55,7 +55,7 @@ def login(request):
         login(request, form.extra.user)
         return HttpResponse('OK')
 
-    return render(request, 'login.html', context=dict(form=form, url='/'))
+    return render(request, 'forum/login.html', context=dict(form=form, url='/'))
 
 
 def rooms(request):
@@ -73,11 +73,19 @@ def parse_datetime(s):
     return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
 
 
-def write(request, room_pk):
+def get_object_or_none(model, **kwargs):
+    try:
+        return model.objects.get(**kwargs)
+    except model.DoesNotExist:
+        return None
+
+
+def write(request, room_pk, message_pk=None):
+    message = get_object_or_none(Message, pk=message_pk)
+    room = get_object_or_404(Room, pk=room_pk)
     parent_pk = request.GET.get('parent')
-    parent = Message.objects.get(pk=parent_pk) if parent_pk is not None else None
+    parent = get_object_or_404(Message, pk=parent_pk) if parent_pk is not None else None
     assert parent is None or parent.room_id == room_pk
-    room = Room.objects.get(pk=room_pk)
 
     def non_editable_single_choice(model, pk):
         return dict(
@@ -99,19 +107,23 @@ def write(request, room_pk):
         if instance.parent and not instance.parent.has_replies:
             Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
+        set_time_for_system(id=room_pk, system='forum.room', time=instance.last_changed_time)
+
     # noinspection PyShadowingNames
     def redirect(request, redirect_to, form):
         del form
-        return HttpResponseRedirect(redirect_to + f'?time={request.GET["time"]}#first_new')
+        del redirect_to
+        return HttpResponseRedirect(room.get_absolute_url() + f'?time={request.GET["time"]}#first_new')
 
     return create_or_edit_object(
         request=request,
         model=Message,
-        is_create=True,
+        instance=message,
+        is_create=message is None,
         on_save=on_save,
         form__field=dict(
             text=Field.textarea,
-            text__label_template='blank.html',
+            text__label_template='forum/blank.html',
             parent=non_editable_single_choice(Message, parent_pk),
             room=non_editable_single_choice(Room, room_pk),
             user=non_editable_single_choice(User, request.user.pk),
@@ -122,14 +134,14 @@ def write(request, room_pk):
         form__include=['text', 'parent', 'room', 'user'],
         render__context__room=room,
         render__context__parent=parent,
-        template_name='room/write.html',
+        template_name='forum/write.html',
     )
 
 
 def view_room(request, room_pk):
     room = get_object_or_404(Room, pk=room_pk)
 
-    t = Time.objects.get_or_create(user=request.user, data=room_pk, system='room', defaults=dict(time=datetime(2001, 1, 1)))[0]
+    user_time = get_time(user=request.user, system='forum.room', id=room_pk)
     show_hidden = bool_parse(request.GET.get('show_hidden', '0'))
 
     def unread_from_here_href(row: Message, **_):
@@ -144,14 +156,14 @@ def view_room(request, room_pk):
 
     # NOTE: there's a t.save() at the very bottom of this function
     if 'unread_from_here' in request.GET:
-        t.time = datetime.fromisoformat(request.GET['unread_from_here'])
+        user_time = datetime.fromisoformat(request.GET['unread_from_here'])
 
     # TODO: show many pages at once if unread? Right now we show the first unread page.
     start_page = None
     if 'page' not in request.GET:
         # Find first unread page
         try:
-            first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=t.time).order_by('path')[0]
+            first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=user_time).order_by('path')[0]
             messages_before_first_unread = room.message_set.filter(path__lt=first_unread_message.path).count()
             start_page = messages_before_first_unread // PAGE_SIZE
         except IndexError:
@@ -161,10 +173,8 @@ def view_room(request, room_pk):
     if not show_hidden:
         messages = messages.filter(visible=True)
 
-    paginator = RoomPaginator(messages)
-
     def is_unread(row, **_):
-        return row.last_changed_time >= t.time
+        return row.last_changed_time >= user_time
 
     def is_unread2(row, **_):
         return row.last_changed_time >= unread2_time and not is_unread(row=row)
@@ -192,11 +202,11 @@ def view_room(request, room_pk):
     result = render_table_to_response(
         request,
         template=get_template('forum/room.html'),
-        paginator=paginator,
+        paginator=RoomPaginator(messages),
         context=dict(
             room=room,
             show_hidden=show_hidden,
-            time=unread2_time or t.time,
+            time=unread2_time or user_time,
             is_subscribed=False,  # TODO:
         ),
         table__data=messages,
@@ -221,12 +231,13 @@ def view_room(request, room_pk):
         table__attrs__id='first_newtable',
         table__attrs__align='center',
         table__attrs__class__roomtable=True,
+        table__paginator__template='forum/blank.html',
         page=start_page,
     )
     if 'unread_from_here' not in request.GET:
-        t.time = datetime.now()
+        user_time = datetime.now()
 
-    t.save()
+    set_time(user=request.user, system='forum.room', id=room.pk, time=user_time)
     return result
 
 
@@ -246,4 +257,4 @@ def delete(request, room_pk, message_pk):
         message.save()
         return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#firstnew'))
     else:
-        return render(request, template_name='delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))
+        return render(request, template_name='forum/delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))

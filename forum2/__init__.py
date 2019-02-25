@@ -79,7 +79,7 @@ class ProfileMiddleware:
 
             import pstats
             s = StringIO()
-            ps = pstats.Stats(self.prof, stream=s).sort_stats('cumulative')
+            ps = pstats.Stats(self.prof, stream=s).sort_stats(request.GET.get('prof') or 'cumulative')
             ps.print_stats()
 
             stats_str = s.getvalue()
