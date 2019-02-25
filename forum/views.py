@@ -255,6 +255,6 @@ def delete(request, room_pk, message_pk):
         message.visible = False
         message.last_changed_by = request.user
         message.save()
-        return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#firstnew'))
+        return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#first_new'))
     else:
         return render(request, template_name='forum/delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))
