@@ -35,11 +35,14 @@ class UserTime(Model):
         return f'UserTime for {self.user} {self.system}/{self.data}: {self.time}'
 
 
+SUBSCRIPTION_TYPES = ('active', 'passive')
+
+
 class Subscription(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
     system = models.CharField(max_length=255, db_index=True)
     data = models.BigIntegerField(db_index=True)
-    active = models.BooleanField(default=True)
+    subscription_type = models.CharField(max_length=50, choices=SUBSCRIPTION_TYPES)
 
     class Meta:
         unique_together = ('user', 'system', 'data')
