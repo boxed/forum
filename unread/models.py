@@ -11,10 +11,10 @@ class Model(models.Model):
 
 
 class SystemTime(Model):
-    data = models.BigIntegerField()
+    data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
 
-    system = models.CharField(max_length=255)
+    system = models.CharField(max_length=255, db_index=True)
 
     class Meta:
         unique_together = ('system', 'data')
@@ -24,11 +24,11 @@ class SystemTime(Model):
 
 
 class UserTime(Model):
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
-    data = models.BigIntegerField()
+    user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
+    data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
 
-    system = models.CharField(max_length=255)
+    system = models.CharField(max_length=255, db_index=True)
 
     class Meta:
         unique_together = ('user', 'system', 'data')
