@@ -72,11 +72,26 @@
     padding: 0.2rem 0.7rem;
 }
 
-#room-footer-block .back,
-#room-footer-block .forward {
+#room-footer-block .back-tools,
+#room-footer-block .forward-tools {
     width: 16rem;
     display: inline-block;
+    white-space: nowrap;
 }
+
+#room-footer-block .previous::after {
+    content: ' Previous';
+}
+#room-footer-block .first::after {
+    content: ' First';
+}
+#room-footer-block .next::before {
+    content: 'Next ';
+}
+#room-footer-block .latest::before {
+    content: 'Latest ';
+}
+
 
 /* Copied and modified from milligram or normalize */
 .button, button, input[type='button'], input[type='reset'], input[type='submit'] {
@@ -164,5 +179,23 @@ margin: 1.5rem 0;
 @media only screen and (max-device-width : 812px) {
     html {
         font-size: 8px;
+    }
+
+    #room-footer-block .back-tools,
+    #room-footer-block .forward-tools {
+        width: 6rem;
+    }
+
+    #room-footer-block .previous::after {
+        content: '';
+    }
+    #room-footer-block .first::after {
+        content: '';
+    }
+    #room-footer-block .next::before {
+        content: '';
+    }
+    #room-footer-block .latest::before {
+        content: '';
     }
 }

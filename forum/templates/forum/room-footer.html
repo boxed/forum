@@ -2,11 +2,11 @@
 <center id="room-footer" class="block">
 
 	<div id="room-footer-block">
-        <span class="back">
+        <span class="back-tools">
             {% if has_previous %}
-                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page=1&time={{ time }}#first_new" name="first" target="_self">&lt;&lt; First</a>
+                <a class="button-ish first" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page=1&time={{ time }}#first_new" name="first" target="_self">&lt;&lt;</a>
 
-                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ previous }}&time={{ time }}#first_new" name="prev" target="_self">&lt; Previous</a>
+                <a class="button-ish previous" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ previous }}&time={{ time }}#first_new" name="prev" target="_self">&lt;</a>
             {% endif %}
         </span>
 
@@ -32,11 +32,11 @@
 
         </span>
 
-        <span class="forward">
+        <span class="forward-tools">
             {% if has_next %}
-                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ next }}&time={{ time }}#first_new" name="next" target="_self">Next &gt;</a>
+                <a class="button-ish next" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ next }}&time={{ time }}#first_new" name="next" target="_self">&gt;</a>
 
-                <a class="button-ish" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ pages }}&time={{ time }}#first_new" name="latest" target="_self">Latest &gt;&gt;</a>
+                <a class="button-ish latest" href="/rooms/{{ room.pk }}/?show_hidden={{ show_hidden }}&page={{ pages }}&time={{ time }}#first_new" name="latest" target="_self">&gt;&gt;</a>
             {% endif %}
         </span>
 	</div>
