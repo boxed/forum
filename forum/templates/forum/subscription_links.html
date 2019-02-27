@@ -1,0 +1,5 @@
+<ul>
+    {% for a in list %}
+        <li><a href="{{ a.url }}"{% if a.unread %} class="unread"{% endif %}>{{ a.name }}</a></li>
+    {% endfor %}
+</ul>

@@ -19,6 +19,7 @@ import forum.views as views
 urlpatterns = [
     path('login/', views.login),
     path('logout/', views.logout),
+    path('subscriptions/', views.subscriptions),
     path('rooms/', views.rooms),
     path('rooms/<int:room_pk>/', views.view_room),
     path('rooms/<int:room_pk>/write/', views.write),

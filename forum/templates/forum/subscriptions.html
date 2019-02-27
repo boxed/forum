@@ -1,0 +1,18 @@
+{% extends "forum/base.html" %}
+
+{% block content %}
+    <h1>Subscriptions</h1>
+
+    <style>
+    ul {
+        list-style: none;
+    }
+    </style>
+
+    active:
+    {% include "forum/subscription_links.html" with list=active %}
+
+    passive:
+    {% include "forum/subscription_links.html" with list=passive %}
+
+{% endblock %}

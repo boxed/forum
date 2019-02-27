@@ -249,6 +249,30 @@ def logout(request):
     return HttpResponseRedirect('/login/')
 
 
+def subscriptions(request):
+    s = Subscription.objects.filter(user=request.user, system='forum.room')
+
+    def foo(type):
+        return [
+            dict(
+                url=room.get_absolute_url() + '#first_new',
+                unread=get_time(user=request.user, system='forum.room', id=room.pk),
+                name=room.name,
+            )
+            for room in
+            Room.objects.filter(pk__in=[x.data for x in s.filter(subscription_type=type)]).order_by('name')
+        ]
+
+    return render(
+        request,
+        template_name='forum/subscriptions.html',
+        context=dict(
+            active=foo(SubscriptionTypes.active),
+            passive=foo(SubscriptionTypes.passive),
+        )
+    )
+
+
 def delete(request, room_pk, message_pk):
     room = get_object_or_404(Room, pk=room_pk)
     message = get_object_or_404(Message, pk=message_pk)
