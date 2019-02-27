@@ -3,6 +3,7 @@ from datetime import datetime
 
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
 from django.contrib.auth import authenticate
+from django.db import transaction, connection, IntegrityError
 from django.db.models import BinaryField
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -17,6 +18,7 @@ from tri.table import render_table_to_response, Column
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
 from unread import get_time, set_time, set_time_for_system
+from unread.models import SystemTime, Subscription, SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
 
@@ -258,3 +260,100 @@ def delete(request, room_pk, message_pk):
         return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#first_new'))
     else:
         return render(request, template_name='forum/delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))
+
+
+def update_batch(qs):
+    count = 0
+    for instance in qs:
+        if not instance.path:
+            if instance.parent:
+                instance.path = instance.parent.path + bytes_from_int(instance.pk)
+            else:
+                instance.path = bytes_from_int(instance.pk)
+
+            instance.save()
+        if instance.parent and not instance.parent.has_replies:
+            Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
+
+        count += 1
+    return count
+
+
+@transaction.atomic
+def update_message_path():
+    update_batch(Message.objects.filter(parent=None))
+    from django.db.models import Q
+    while update_batch(Message.objects.filter(path=None).filter(Q(parent=None) | Q(parent__path__isnull=False))):
+        pass
+
+
+def import_times():
+    from unread.models import UserTime
+    UserTime.objects.all().delete()
+
+    cursor = connection.cursor()
+    cursor.execute('select `user`, `data`, `system`, `time` from forum.times where system = "0"')
+
+    for row in cursor.fetchall():
+        try:
+            if row[0] is None:
+                SystemTime.objects.create(data=row[1], system='forum.room', time=row[3])
+            else:
+                UserTime.objects.create(user_id=row[0], data=row[1], system='forum.room', time=row[3])
+        except Exception as e:
+            print(e)
+
+
+def import_subscriptions():
+    from collections import defaultdict
+
+    cursor = connection.cursor()
+    cursor.execute('select id, AreaGroup from forum.areas')
+
+    areas_by_areagroup = defaultdict(set)
+    for area, areagroup in cursor.fetchall():
+        areas_by_areagroup[areagroup].add(area)
+
+    cursor.execute('select * from forum.areahotlist')
+
+    data = {0: {}, 1: {}}
+
+    for user, area, areagroup, system in cursor.fetchall():
+        data[system].setdefault(user, dict(areas=set(), areagroups=set()))
+        if area:
+            data[system][user]['areas'].add(area)
+        else:
+            assert areagroup
+            data[system][user]['areagroups'].add(areagroup)
+
+    for system, foo in data.items():
+        for user, bar in foo.items():
+            areas = bar['areas']
+            areagroups = bar['areagroups']
+
+            subscriptions = set()
+
+            for areagroup in areagroups:
+                areas_for_this_areagroup = areas_by_areagroup[areagroup] & areas
+                areas -= areas_for_this_areagroup
+                subscriptions |= areas_by_areagroup[areagroup] - areas_for_this_areagroup
+
+            subscriptions |= areas
+
+            for room_pk in subscriptions:
+                try:
+                    Room.objects.get(pk=room_pk)
+                    User.objects.get(pk=user)
+
+                    Subscription.objects.create(
+                        user_id=user,
+                        system='forum.room',
+                        data=room_pk,
+                        subscription_type=SubscriptionTypes.active if system == 0 else SubscriptionTypes.passive
+                    )
+                except Room.DoesNotExist:
+                    print(f'invalid room pk {room_pk}')
+                except User.DoesNotExist:
+                    print(f'invalid user pk {room_pk}')
+                except IntegrityError:
+                    pass
