@@ -17,7 +17,7 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread import get_time, set_time, set_time_for_system
+from unread import get_time, set_time, set_time_for_system, is_unread, get_time_for_system
 from unread.models import SystemTime, Subscription, SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -256,8 +256,10 @@ def subscriptions(request):
         return [
             dict(
                 url=room.get_absolute_url() + '#first_new',
-                unread=get_time(user=request.user, system='forum.room', id=room.pk),
+                unread=is_unread(user=request.user, system='forum.room', id=room.pk),
                 name=room.name,
+                system_time=get_time_for_system(system='forum.room', id=room.pk),
+                user_time=get_time(user=request.user, system='forum.room', id=room.pk),
             )
             for room in
             Room.objects.filter(pk__in=[x.data for x in s.filter(subscription_type=type)]).order_by('name')
@@ -311,19 +313,56 @@ def update_message_path():
         pass
 
 
+def import_from_skforum():
+    cursor = connection.cursor()
+    # for table in ['forum_message', 'forum_room', 'unread_usertime', 'unread_systemtime']:
+    #     cursor.execute(f'truncate {table}')
+
+    import_users()
+    import_rooms()
+    import_messages()
+    import_times()
+    import_subscriptions()
+    update_message_path()
+    fix_broken_last_changed_timestamps()
+    update_room_times()
+
+
+def import_users():
+    cursor = connection.cursor()
+    cursor.execute('insert into auth_user (id, password, last_login, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined) select id, password, NOW(), 0, name, "", "", email, 0, 1, NOW() from forum.users')
+
+
+def import_rooms():
+    cursor = connection.cursor()
+    cursor.execute('insert into forum_room (id, name, description) select id, name, "" from forum.areas')
+
+
+def import_messages():
+    cursor = connection.cursor()
+    cursor.execute("""
+    insert into forum_message (text, room_id, id, user_id, last_changed_time, last_changed_by_id, path, parent_id, visible, has_replies, time_created)
+
+    select CONCAT(Subject, '\n', Body), Area, ID, User, LastChanged, LastChangedUser, NULL, Parent, visible, 0, Timecreated 
+    from forum.messages
+    where Area in (select id from forum_room)
+    order by ID
+    """)
+
+
 def import_times():
     from unread.models import UserTime
     UserTime.objects.all().delete()
 
     cursor = connection.cursor()
-    cursor.execute('select `user`, `data`, `system`, `time` from forum.times where system = "0"')
+    cursor.execute('select `user`, `data`, `time` from forum.times where system = "0"')
 
     for row in cursor.fetchall():
         try:
             if row[0] is None:
                 SystemTime.objects.create(data=row[1], system='forum.room', time=row[3])
             else:
-                UserTime.objects.create(user_id=row[0], data=row[1], system='forum.room', time=row[3])
+                UserTime.objects.create(user_id=row[0], data=row[1], system='forum.room', time=row[2])
         except Exception as e:
             print(e)
 
@@ -381,3 +420,17 @@ def import_subscriptions():
                     print(f'invalid user pk {room_pk}')
                 except IntegrityError:
                     pass
+
+
+def fix_broken_last_changed_timestamps():
+    cursor = connection.cursor()
+    cursor.execute('update forum_message set last_changed_time = time_created')
+
+
+def update_room_times():
+    for room in Room.objects.all():
+        try:
+            last_time = Message.objects.filter(room=room).order_by('-last_changed_time')[0].last_changed_time
+            set_time_for_system(id=room.pk, system='forum.room', time=last_time)
+        except IndexError:
+            pass

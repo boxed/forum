@@ -92,6 +92,14 @@
     content: 'Latest ';
 }
 
+.menu {
+    list-style: none;
+}
+
+.menu li a {
+    display: block;
+}
+
 
 /* Copied and modified from milligram or normalize */
 .button, button, input[type='button'], input[type='reset'], input[type='submit'] {

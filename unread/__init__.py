@@ -17,7 +17,7 @@ def get_time_for_system(*, id, system: str, time: Optional[datetime] = None):
     from .models import SystemTime
     if time is None:
         time = datetime(2001, 1, 1)
-    return SystemTime.objects.update_or_create(data=id, system=system, defaults=dict(time=time)).time
+    return SystemTime.objects.get_or_create(data=id, system=system, defaults=dict(time=time))[0].time
 
 
 # noinspection PyShadowingBuiltins
