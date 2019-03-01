@@ -3,6 +3,38 @@
 {% block extra_head %}
     <meta http-equiv="refresh" content="60">
     <base target="main">
+    <style>
+        #passive {
+            display: none;
+        }
+
+        body {
+            background-color: #5529a1;
+            color: white;
+        }
+
+        #toggle_passive {
+            padding-left: 2rem;
+            color: #c995ff;
+        }
+
+    </style>
+
+    <script>
+        function toggle_passive() {
+            let passive = document.getElementById('passive');
+            let toggler = document.getElementById('toggle_passive');
+            if (passive.style.display === 'block') {
+                passive.style.display = '';
+                toggler.textContent = 'Show passive';
+            }
+            else {
+                passive.style.display = 'block';
+                toggler.textContent = 'Hide passive';
+            }
+        }
+    </script>
+
 {% endblock %}
 
 {% block content %}
@@ -11,13 +43,7 @@
 
     {% include "forum/subscription_links.html" with list=active id='active' %}
 
-    <style>
-        #passive {
-            display: none;
-        }
-    </style>
-
-    <div onclick="document.getElementById('passive').style.display = 'block'">Show passive</div>
+    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>
 
     {% include "forum/subscription_links.html" with list=passive id='passive' %}
 

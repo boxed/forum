@@ -65,6 +65,10 @@ def index(request):
     return render(request, template_name='forum/index.html')
 
 
+def welcome(request):
+    return render(request, template_name='forum/welcome.html')
+
+
 def rooms(request):
     return render_table_to_response(request, table__model=Room)
 

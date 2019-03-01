@@ -99,7 +99,21 @@
 
 .menu li a {
     display: block;
-    padding-left: 6px;
+    padding-left: 2rem;
+    color: white;
+}
+
+
+.menu li a.unread:hover {
+    background-color: #b550cd;
+}
+
+.menu li a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.menu .unread {
+    background-color: #A150B9;
 }
 
 
