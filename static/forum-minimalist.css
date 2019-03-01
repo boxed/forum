@@ -94,10 +94,12 @@
 
 .menu {
     list-style: none;
+    padding: 0;
 }
 
 .menu li a {
     display: block;
+    padding-left: 6px;
 }
 
 

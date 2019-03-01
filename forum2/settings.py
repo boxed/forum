@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'forum2.current_request_middleware',
     'forum2.ProfileMiddleware',
     'forum2.LoggingMiddleware',
+    'forum2.login_middleware',
 ]
 
 ROOT_URLCONF = 'forum2.urls'

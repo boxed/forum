@@ -17,6 +17,7 @@ from django.urls import path
 import forum.views as views
 
 urlpatterns = [
+    path('', views.index),
     path('login/', views.login),
     path('logout/', views.logout),
     path('subscriptions/', views.subscriptions),

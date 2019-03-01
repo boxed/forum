@@ -14,9 +14,11 @@ from io import StringIO
 from logging import addLevelName
 from tempfile import NamedTemporaryFile
 from time import time
+from urllib.parse import quote_plus
 
 from django.conf import settings
 from django.db.backends import utils as django_db_utils
+from django.http import HttpResponseRedirect
 from termcolor import colored
 
 
@@ -35,8 +37,20 @@ def current_request_middleware(get_response):
         request.STACKS = defaultdict(list)
         request.DB_USING_COUNTS = defaultdict(int)
 
-        response = get_response(request)
-        return response
+        return get_response(request)
+
+    return middleware
+
+
+def login_middleware(get_response):
+    def is_whitelist(path):
+        return any([path.startswith(x) for x in ['/login/', '/static/', '/logout/', '/forgot-password/', '/create-account/']])
+
+    def middleware(request):
+        if request.user.is_authenticated or is_whitelist(request.path):
+            return get_response(request)
+        else:
+            return HttpResponseRedirect(f'/login/?next={quote_plus(request.get_full_path())}')
 
     return middleware
 

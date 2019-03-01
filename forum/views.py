@@ -35,6 +35,7 @@ def login(request):
     class LoginForm(Form):
         username = Field()
         password = Field.password()
+        next = Field.hidden(initial=request.GET.get('next'))
 
         def is_valid(self):
             if not super(LoginForm, self).is_valid():
@@ -55,9 +56,13 @@ def login(request):
 
     if request.method == 'POST' and form.is_valid():
         login(request, form.extra.user)
-        return HttpResponse('OK')
+        return HttpResponseRedirect(form.fields_by_name['next'].value or '/')
 
     return render(request, 'forum/login.html', context=dict(form=form, url='/'))
+
+
+def index(request):
+    return render(request, template_name='forum/index.html')
 
 
 def rooms(request):
