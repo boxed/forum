@@ -1,5 +1,6 @@
 django
 tri.table
+tri.token
 termcolor
 jinja2
 mysqlclient
