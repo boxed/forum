@@ -158,4 +158,8 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 DATE_FORMAT = 'Y-m-d'
 
-SQL_DEBUG = 4
+
+try:
+    from .settings_local import *
+except ImportError:
+    pass

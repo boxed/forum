@@ -6,6 +6,7 @@ table.css.map
 .cache
 .DS_Store
 .pytest_cache
+settings_local.py
 
 # C extensions
 *.so
