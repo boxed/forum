@@ -433,8 +433,3 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
             return self.__dict__[attr]
         else:
             return getattr(self.cursor, attr)
-
-
-if getattr(settings, "REPLACE_CURSOR_DEBUG_WRAPPER", True):
-    import django.db.backends.utils
-    django.db.backends.utils.CursorDebugWrapper = CursorDebugWrapper
