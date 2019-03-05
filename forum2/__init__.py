@@ -44,7 +44,7 @@ def current_request_middleware(get_response):
 
 def login_middleware(get_response):
     def is_whitelist(path):
-        return any([path.startswith(x) for x in ['/login/', '/static/', '/logout/', '/forgot-password/', '/create-account/']])
+        return any([path.startswith(x) for x in ['/login/', '/static/', '/logout/', '/forgot-password/', '/create-account/', '/api/']])
 
     def middleware(request):
         if request.user.is_authenticated or is_whitelist(request.path):
