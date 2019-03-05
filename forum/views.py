@@ -328,7 +328,7 @@ def delete(request, room_pk, message_pk):
 
 
 def api_unread(request):
-    if authenticate(request=request, username=request.GET['username'], password=request.GET['password']):
+    if authenticate(request=request, username=request.POST['username'], password=request.POST['password']):
         return HttpResponse(f'{len(unread_items(user=request.user))}')
     else:
         return HttpResponse('Failed to log in')
