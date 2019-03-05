@@ -11,6 +11,7 @@ from django.shortcuts import get_object_or_404
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from django.views.decorators.csrf import csrf_exempt
 from tri.form import register_field_factory, Form, Field, Link, bool_parse
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
@@ -327,6 +328,7 @@ def delete(request, room_pk, message_pk):
         return render(request, template_name='forum/delete.html', context=dict(next=request.META.get('HTTP_REFERER'), message=message))
 
 
+@csrf_exempt
 def api_unread(request):
     data = request.POST if request.method == 'POST' else request.GET
     if authenticate(request=request, username=data['username'], password=data['password']):
