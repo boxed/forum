@@ -1,4 +1,6 @@
 import re
+from _sha1 import sha1
+from base64 import b64encode
 from datetime import datetime
 
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
@@ -35,7 +37,7 @@ def login(request):
     class LoginForm(Form):
         username = Field()
         password = Field.password()
-        next = Field.hidden(initial=request.GET.get('next'))
+        next = Field.hidden(initial=request.GET.get('next', '/'))
 
         def is_valid(self):
             if not super(LoginForm, self).is_valid():
@@ -49,6 +51,15 @@ def login(request):
                 self.extra.user = user
                 if authenticate(request=request, username=username, password=password):
                     return True
+
+                try:
+                    username = User.objects.get(username=username)
+                    if b64encode(sha1(password.encode()).digest()).decode() == user.password:
+                        user.set_password(password)  # upgrade password
+                        user.save()
+                    authenticate(request=request, username=username, password=password)
+                except User.DoesNotExist:
+                    pass
 
             return False
 
@@ -267,7 +278,7 @@ def subscriptions(request):
     user_time_by_id = get_times_for_user(user=request.user, system='forum.room', ids=[x.data for x in s])
 
     def room_info(subscription_type):
-        return [
+        return sorted([
             dict(
                 url=room_by_pk[subscription.data].get_absolute_url() + '#first_new',
                 unread=user_time_by_id.get(subscription.data, DEFAULT_TIME) < system_time_by_id.get(subscription.data, DEFAULT_TIME),
@@ -277,7 +288,7 @@ def subscriptions(request):
             )
             for subscription in s
             if subscription.subscription_type == subscription_type.name
-        ]
+        ], key=lambda x: x['name'])
 
     active = room_info(SubscriptionTypes.active)
     passive = room_info(SubscriptionTypes.passive)
@@ -302,7 +313,7 @@ def delete(request, room_pk, message_pk):
         message.save()
         return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#first_new'))
     else:
-        return render(request, template_name='forum/delete.html', context=dict(next=request.headers.get('HTTP_REFERER'), message=message))
+        return render(request, template_name='forum/delete.html', context=dict(next=request.META.get('HTTP_REFERER'), message=message))
 
 
 def update_batch(qs):
