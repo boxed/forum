@@ -10,14 +10,25 @@ from datetime import datetime
 
 
 # noinspection PyShadowingBuiltins
-from typing import Optional
+from typing import Optional, List
+
+DEFAULT_TIME = datetime(2001, 1, 1)
 
 
 def get_time_for_system(*, id, system: str, time: Optional[datetime] = None):
     from .models import SystemTime
     if time is None:
-        time = datetime(2001, 1, 1)
+        time = DEFAULT_TIME
     return SystemTime.objects.get_or_create(data=id, system=system, defaults=dict(time=time))[0].time
+
+
+def get_times_for_system(*, system: str, ids: List[int]):
+    from .models import SystemTime
+    time_by_data = {x.data: x.time for x in SystemTime.objects.filter(data__in=ids, system=system)}
+    return {
+        id: time_by_data.get(id, DEFAULT_TIME)
+        for id in ids
+    }
 
 
 # noinspection PyShadowingBuiltins
@@ -29,7 +40,16 @@ def set_time_for_system(*, id, system: str, time: datetime):
 # noinspection PyShadowingBuiltins
 def get_time(*, user, system: str, id: int) -> datetime:
     from .models import UserTime
-    return UserTime.objects.get_or_create(user=user, data=id, system=system, defaults=dict(time=datetime(2001, 1, 1)))[0].time
+    return UserTime.objects.get_or_create(user=user, data=id, system=system, defaults=dict(time=DEFAULT_TIME))[0].time
+
+
+def get_times_for_user(*, user, system: str, ids: List[int]):
+    from .models import UserTime
+    time_by_data = {x.data: x.time for x in UserTime.objects.filter(user=user, data__in=ids, system=system)}
+    return {
+        id: time_by_data.get(id, DEFAULT_TIME)
+        for id in ids
+    }
 
 
 # noinspection PyShadowingBuiltins

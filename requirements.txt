@@ -1,4 +1,4 @@
-django
+django==2.1.0
 tri.table
 tri.token
 termcolor

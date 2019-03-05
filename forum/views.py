@@ -17,7 +17,7 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread import get_time, set_time, set_time_for_system, is_unread, get_time_for_system
+from unread import get_time, set_time, set_time_for_system, is_unread, get_time_for_system, get_times_for_system, get_times_for_user, DEFAULT_TIME
 from unread.models import SystemTime, Subscription, SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -259,27 +259,35 @@ def logout(request):
 
 
 def subscriptions(request):
-    s = Subscription.objects.filter(user=request.user, system='forum.room')
+    s = list(Subscription.objects.filter(user=request.user, system='forum.room'))
 
-    def foo(type):
+    room_by_pk = {room.pk: room for room in Room.objects.filter(pk__in=[x.data for x in s])}
+
+    system_time_by_id = get_times_for_system(system='forum.room', ids=[x.data for x in s])
+    user_time_by_id = get_times_for_user(user=request.user, system='forum.room', ids=[x.data for x in s])
+
+    def room_info(subscription_type):
         return [
             dict(
-                url=room.get_absolute_url() + '#first_new',
-                unread=is_unread(user=request.user, system='forum.room', id=room.pk),
-                name=room.name,
-                system_time=get_time_for_system(system='forum.room', id=room.pk),
-                user_time=get_time(user=request.user, system='forum.room', id=room.pk),
+                url=room_by_pk[subscription.data].get_absolute_url() + '#first_new',
+                unread=user_time_by_id.get(subscription.data, DEFAULT_TIME) < system_time_by_id.get(subscription.data, DEFAULT_TIME),
+                name=room_by_pk[subscription.data].name,
+                system_time=system_time_by_id.get(subscription.data, DEFAULT_TIME),
+                user_time=user_time_by_id.get(subscription.data, DEFAULT_TIME),
             )
-            for room in
-            Room.objects.filter(pk__in=[x.data for x in s.filter(subscription_type=type)]).order_by('name')
+            for subscription in s
+            if subscription.subscription_type == subscription_type.name
         ]
+
+    active = room_info(SubscriptionTypes.active)
+    passive = room_info(SubscriptionTypes.passive)
 
     return render(
         request,
         template_name='forum/subscriptions.html',
         context=dict(
-            active=foo(SubscriptionTypes.active),
-            passive=foo(SubscriptionTypes.passive),
+            active=active,
+            passive=passive,
         )
     )
 

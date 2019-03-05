@@ -4,8 +4,11 @@
     <meta http-equiv="refresh" content="60">
     <base target="main">
     <style>
-        #passive {
+        #passive li {
             display: none;
+        }
+        #passive li.unread {
+            display: inline;
         }
 
         body {
@@ -20,20 +23,20 @@
 
     </style>
 
-    <script>
-        function toggle_passive() {
-            let passive = document.getElementById('passive');
-            let toggler = document.getElementById('toggle_passive');
-            if (passive.style.display === 'block') {
-                passive.style.display = '';
-                toggler.textContent = 'Show passive';
-            }
-            else {
-                passive.style.display = 'block';
-                toggler.textContent = 'Hide passive';
-            }
-        }
-    </script>
+{#    <script>#}
+{#        function toggle_passive() {#}
+{#            let passive = document.getElementById('passive');#}
+{#            let toggler = document.getElementById('toggle_passive');#}
+{#            if (passive.style.display === 'block') {#}
+{#                passive.style.display = '';#}
+{#                toggler.textContent = 'Show passive';#}
+{#            }#}
+{#            else {#}
+{#                passive.style.display = 'block';#}
+{#                toggler.textContent = 'Hide passive';#}
+{#            }#}
+{#        }#}
+{#    </script>#}
 
 {% endblock %}
 
@@ -43,7 +46,7 @@
 
     {% include "forum/subscription_links.html" with list=active id='active' %}
 
-    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>
+{#    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>#}
 
     {% include "forum/subscription_links.html" with list=passive id='passive' %}
 
