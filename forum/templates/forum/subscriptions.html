@@ -4,10 +4,10 @@
     <meta http-equiv="refresh" content="60">
     <base target="main">
     <style>
-        #passive li {
+        .passive li {
             display: none;
         }
-        #passive li.unread {
+        .passive li.unread {
             display: inline;
         }
 
@@ -23,20 +23,20 @@
 
     </style>
 
-{#    <script>#}
-{#        function toggle_passive() {#}
-{#            let passive = document.getElementById('passive');#}
-{#            let toggler = document.getElementById('toggle_passive');#}
-{#            if (passive.style.display === 'block') {#}
-{#                passive.style.display = '';#}
-{#                toggler.textContent = 'Show passive';#}
-{#            }#}
-{#            else {#}
-{#                passive.style.display = 'block';#}
-{#                toggler.textContent = 'Hide passive';#}
-{#            }#}
-{#        }#}
-{#    </script>#}
+    <script>
+        function toggle_passive() {
+            let passive = document.getElementById('passive');
+            let toggler = document.getElementById('toggle_passive');
+            if (passive.className === 'menu passive') {
+                passive.className = 'menu';
+                toggler.textContent = 'Hide passive';
+            }
+            else {
+                passive.className = 'menu passive';
+                toggler.textContent = 'Show passive';
+            }
+        }
+    </script>
 
 {% endblock %}
 
@@ -44,9 +44,15 @@
 
     <h1>SK</h1>
 
+    {% if has_unread %}
+        <script>
+            window.parent.document.title = '* {{ user }} - SKForum';
+        </script>
+    {% endif %}
+
     {% include "forum/subscription_links.html" with list=active id='active' %}
 
-{#    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>#}
+    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>
 
     {% include "forum/subscription_links.html" with list=passive id='passive' %}
 

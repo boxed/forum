@@ -277,21 +277,32 @@ def subscriptions(request):
     system_time_by_id = get_times_for_system(system='forum.room', ids=[x.data for x in s])
     user_time_by_id = get_times_for_user(user=request.user, system='forum.room', ids=[x.data for x in s])
 
-    def room_info(subscription_type):
-        return sorted([
-            dict(
-                url=room_by_pk[subscription.data].get_absolute_url() + '#first_new',
-                unread=user_time_by_id.get(subscription.data, DEFAULT_TIME) < system_time_by_id.get(subscription.data, DEFAULT_TIME),
-                name=room_by_pk[subscription.data].name,
-                system_time=system_time_by_id.get(subscription.data, DEFAULT_TIME),
-                user_time=user_time_by_id.get(subscription.data, DEFAULT_TIME),
-            )
-            for subscription in s
-            if subscription.subscription_type == subscription_type.name
-        ], key=lambda x: x['name'])
+    has_unread = False
 
-    active = room_info(SubscriptionTypes.active)
-    passive = room_info(SubscriptionTypes.passive)
+    active = []
+    passive = []
+
+    for subscription in s:
+        system_time = system_time_by_id.get(subscription.data, DEFAULT_TIME)
+        user_time = user_time_by_id.get(subscription.data, DEFAULT_TIME)
+        room = room_by_pk[subscription.data]
+        x = dict(
+            url=room.get_absolute_url() + '#first_new',
+            unread=user_time < system_time,
+            name=room.name,
+            system_time=system_time,
+            user_time=user_time,
+        )
+        if x['unread']:
+            has_unread = True
+        if subscription.subscription_type == SubscriptionTypes.active.name:
+            active.append(x)
+        else:
+            assert subscription.subscription_type == SubscriptionTypes.passive.name
+            passive.append(x)
+
+    active = sorted(active, key=lambda x: x['name'])
+    passive = sorted(passive, key=lambda x: x['name'])
 
     return render(
         request,
@@ -299,6 +310,7 @@ def subscriptions(request):
         context=dict(
             active=active,
             passive=passive,
+            has_unread=has_unread,
         )
     )
 

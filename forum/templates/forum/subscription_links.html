@@ -1,4 +1,4 @@
-<ul class="menu" id="{{ id }}">
+<ul class="menu {{ id }}" id="{{ id }}">
     {% for a in list %}
         <li{% if a.unread %} class="unread"{% endif %}><a href="{{ a.url }}"{% if a.unread %} class="unread"{% endif %}>{{ a.name }}</a></li>
     {% endfor %}
