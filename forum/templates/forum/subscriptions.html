@@ -2,7 +2,7 @@
 
 {% block extra_head %}
     <meta http-equiv="refresh" content="60">
-    <base target="main">
+    <base target="{% block target %}main{% endblock %}">
     <style>
         .passive li {
             display: none;

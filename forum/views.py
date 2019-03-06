@@ -73,6 +73,8 @@ def login(request):
 
 
 def index(request):
+    if request.user_agent.is_mobile:
+        return render(request, template_name='forum/index_mobile.html')
     return render(request, template_name='forum/index.html')
 
 
