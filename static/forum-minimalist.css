@@ -202,7 +202,8 @@ margin: 1.5rem 0;
 
 @media only screen and (max-device-width : 812px) {
     html {
-        font-size: 8px;
+        font-size: 10px;
+        font-weight: normal;
     }
 
     #room-footer-block .back-tools,
