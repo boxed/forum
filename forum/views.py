@@ -301,8 +301,8 @@ def subscriptions(request):
             assert subscription.subscription_type == SubscriptionTypes.passive.name
             passive.append(x)
 
-    active = sorted(active, key=lambda x: x['name'])
-    passive = sorted(passive, key=lambda x: x['name'])
+    active = sorted(active, key=lambda x: x['name'].lower())
+    passive = sorted(passive, key=lambda x: x['name'].lower())
 
     return render(
         request,
