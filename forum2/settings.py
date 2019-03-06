@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'tri.form',
     'tri.query',
     'tri.table',
+    'django_user_agents',
 ]
 
 MIDDLEWARE = [
@@ -54,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'dango_user_agents.middleware.UserAgentMiddleware',
     'forum2.current_request_middleware',
     'forum2.ProfileMiddleware',
     'forum2.LoggingMiddleware',
