@@ -74,7 +74,7 @@ def login(request):
 
 def index(request):
     if request.user_agent.is_mobile:
-        return render(request, template_name='forum/index_mobile.html')
+        return subscriptions(request, template_name='forum/index_mobile.html')
     return render(request, template_name='forum/index.html')
 
 
@@ -271,7 +271,7 @@ def logout(request):
     return HttpResponseRedirect('/login/')
 
 
-def subscriptions(request):
+def subscriptions(request, template_name='forum/subscriptions.html'):
     s = list(Subscription.objects.filter(user=request.user, system='forum.room'))
 
     room_by_pk = {room.pk: room for room in Room.objects.filter(pk__in=[x.data for x in s])}
@@ -308,7 +308,7 @@ def subscriptions(request):
 
     return render(
         request,
-        template_name='forum/subscriptions.html',
+        template_name=template_name,
         context=dict(
             active=active,
             passive=passive,
