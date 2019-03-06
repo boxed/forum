@@ -2,5 +2,8 @@ django
 tri.table
 tri.token
 termcolor
-jinja2
 mysqlclient
+pyyaml
+ua-parser
+user-agents
+django-user-agents
