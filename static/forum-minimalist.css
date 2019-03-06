@@ -205,10 +205,6 @@ margin: 1.5rem 0;
         font-size: 8px;
         font-weight: normal;
     }
-    
-    frameset {
-        display: none;
-    }
 
     #room-footer-block .back-tools,
     #room-footer-block .forward-tools {
