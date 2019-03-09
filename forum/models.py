@@ -17,6 +17,7 @@ class Model(models.Model):
 class Room(Model):
     name = models.CharField(max_length=255)
     description = models.TextField()
+    custom_data = models.CharField(max_length=1024, db_index=True, null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -48,6 +49,8 @@ class Message(models.Model):
     last_changed_time = models.DateTimeField(auto_now=True)
 
     has_replies = models.BooleanField(default=False)
+
+    custom_data = models.CharField(max_length=1024, db_index=True, null=True, blank=True)
 
     def __repr__(self):
         return f'<Message: {self.pk}>'
