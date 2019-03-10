@@ -9,6 +9,8 @@
     --dark-unread-bg-color: #5529a1;
 
     --fixed-header-height: 5rem;
+
+    --link-color: #9b4dca;
 }
 
 /* subscriptions list */
@@ -156,8 +158,8 @@
 
 /* Copied and modified from milligram or normalize */
 .button, button, input[type='button'], input[type='reset'], input[type='submit'] {
-    background-color: #9b4dca;
-    border: 0.1rem solid #9b4dca;
+    background-color: var(--link-color);
+    border: 0.1rem solid var(--link-color);
     border-radius: .4rem;
     color: #fff;
     cursor: pointer;
@@ -170,7 +172,7 @@
 
 .button.button-outline, button.button-outline, input[type='button'].button-outline, input[type='reset'].button-outline, input[type='submit'].button-outline {
 background-color: transparent;
-color: #9b4dca;
+color: var(--link-color);
 }
 
 
@@ -209,8 +211,8 @@ margin: 0.67rem 0;
 
 .fixed-top-unread, .fixed-bottom-unread {
     position: fixed;
-    background-color: var(--dark-unread-bg-color);
-    height: 3px;
+    background-color: var(--link-color);
+    height: 0.5rem;
     width: 100%;
     z-index: 2;
 }
@@ -248,7 +250,7 @@ width: 100%;
 }
 
 a {
-color: #9b4dca;
+color: var(--link-color);
 text-decoration: none;
 }
 
