@@ -1,27 +1,12 @@
 {% extends "forum/base.html" %}
 
+{% block body_attributes %}
+    id="subscriptions"
+{% endblock %}
+
 {% block extra_head %}
     <meta http-equiv="refresh" content="60">
     <base target="{% block target %}main{% endblock %}">
-    <style>
-        .passive li {
-            display: none;
-        }
-        .passive li.unread {
-            display: inline;
-        }
-
-        body {
-            background-color: #5529a1;
-            color: white;
-        }
-
-        #toggle_passive {
-            padding-left: 2rem;
-            color: #c995ff;
-        }
-
-    </style>
 
     <script>
         function toggle_passive() {
