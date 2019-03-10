@@ -4,18 +4,15 @@
 
     <script>
         document.body.onscroll = function () {
-            let top = document.body.scrollTop;
-            let bottom = document.body.scrollTop + window.innerHeight;
-
             var show_unread_top = false;
             var show_unread_bottom = false;
 
             for (let unread_item of document.getElementsByClassName('unread')) {
                 let position = unread_item.getBoundingClientRect();
-                if (position.bottom < top) {
+                if (position.bottom < 0) {
                     show_unread_top = true;
                 }
-                if (position.top > bottom) {
+                if (position.top > window.innerHeight) {
                     show_unread_bottom = true;
                 }
 
