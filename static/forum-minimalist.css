@@ -209,7 +209,7 @@ margin: 0.67rem 0;
     height: var(--fixed-header-height);
 }
 
-.fixed-top-unread, .fixed-bottom-unread {
+#fixed-top-unread, #fixed-bottom-unread {
     position: fixed;
     background-color: var(--link-color);
     height: 0.5rem;
@@ -217,10 +217,10 @@ margin: 0.67rem 0;
     z-index: 2;
 }
 
-.fixed-top-unread {
+#fixed-top-unread {
     top: 0;
 }
-.fixed-bottom-unread {
+#fixed-bottom-unread {
     bottom: 0;
 }
 

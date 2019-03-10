@@ -2,7 +2,44 @@
 
 {% block content %}
 
-    <div class="fixed-top-unread"></div>
+    <script>
+        document.body.onscroll = function () {
+            let top = document.body.scrollTop;
+            let bottom = document.body.scrollTop + window.innerHeight;
+
+            var show_unread_top = false;
+            var show_unread_bottom = false;
+
+            for (let unread_item of document.getElementsByClassName('unread')) {
+                let position = unread_item.getBoundingClientRect();
+                if (position.bottom < top) {
+                    show_unread_top = true;
+                }
+                if (position.top > bottom) {
+                    show_unread_bottom = true;
+                }
+
+                if (show_unread_top && show_unread_bottom) {
+                    break;
+                }
+            }
+
+            if (show_unread_top) {
+                document.getElementById('fixed-top-unread').style.display = 'inline';
+            }
+            else {
+                document.getElementById('fixed-top-unread').style.display = 'none';
+            }
+            if (show_unread_bottom) {
+                document.getElementById('fixed-bottom-unread').style.display = 'inline';
+            }
+            else {
+                document.getElementById('fixed-bottom-unread').style.display = 'none';
+            }
+        };
+    </script>
+
+    <div id="fixed-top-unread"></div>
 
     <div class="fixed-header">
         <h1>
@@ -22,6 +59,6 @@
         {% include "forum/room-footer.html" %}
     </div>
 
-    <div class="fixed-bottom-unread"></div>
+    <div id="fixed-bottom-unread"></div>
 
 {% endblock %}
