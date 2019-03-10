@@ -1,5 +1,4 @@
 from hashlib import md5
-from math import sqrt
 
 from django.contrib.auth.models import User
 from django.core import validators

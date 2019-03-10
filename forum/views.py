@@ -19,7 +19,7 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread import get_time, set_time, set_time_for_system, get_times, get_times_for_user, DEFAULT_TIME, unread_items
+from unread import get_time, set_time, set_time_for_system, DEFAULT_TIME, unread_items, get_times_by_system, get_times_for_user_by_system
 from unread.models import Subscription, SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
@@ -276,8 +276,8 @@ def subscriptions(request, template_name='forum/subscriptions.html'):
 
     room_by_pk = {room.pk: room for room in Room.objects.filter(pk__in=[x.data for x in s])}
 
-    system_time_by_id = get_times(system='forum.room', ids=[x.data for x in s])
-    user_time_by_id = get_times_for_user(user=request.user, system='forum.room', ids=[x.data for x in s])
+    system_time_by_id = get_times_by_system(system='forum.room', ids=[x.data for x in s])
+    user_time_by_id = get_times_for_user_by_system(user=request.user, system='forum.room', ids=[x.data for x in s])
 
     has_unread = False
 
