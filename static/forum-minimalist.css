@@ -11,11 +11,13 @@
     --fixed-header-height: 5rem;
 
     --link-color: #9b4dca;
+
+    --menu-bg-color: #351a61;
 }
 
 /* subscriptions list */
 #subscriptions {
-    background-color: var(--dark-unread-bg-color);
+    background-color: var(--menu-bg-color);
     color: white;
     margin: 0;
 }
@@ -27,10 +29,6 @@
     display: inline;
 }
 
-#toggle_passive {
-    padding-left: 2rem;
-    color: #c995ff;
-}
 /* end subscriptions list */
 
 .time {

@@ -131,7 +131,7 @@ def write(request, room_pk, message_pk=None):
         if instance.parent and not instance.parent.has_replies:
             Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
-        set_time_for_system(id=room_pk, system='forum.room', time=instance.last_changed_time)
+        set_time_for_system(id=room_pk, system='forum_room', time=instance.last_changed_time)
 
     # noinspection PyShadowingNames
     def redirect(request, redirect_to, form):
@@ -165,7 +165,7 @@ def write(request, room_pk, message_pk=None):
 def view_room(request, room_pk):
     room = get_object_or_404(Room, pk=room_pk)
 
-    user_time = get_time(user=request.user, system='forum.room', id=room_pk)
+    user_time = get_time(user=request.user, system='forum_room', id=room_pk)
     show_hidden = bool_parse(request.GET.get('show_hidden', '0'))
 
     def unread_from_here_href(row: Message, **_):
@@ -261,7 +261,7 @@ def view_room(request, room_pk):
     if 'unread_from_here' not in request.GET:
         user_time = datetime.now()
 
-    set_time(user=request.user, system='forum.room', id=room.pk, time=user_time)
+    set_time(user=request.user, system='forum_room', id=room.pk, time=user_time)
     return result
 
 
@@ -272,12 +272,12 @@ def logout(request):
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):
-    s = list(Subscription.objects.filter(user=request.user, system='forum.room'))
+    s = list(Subscription.objects.filter(user=request.user, system='forum_room'))
 
     room_by_pk = {room.pk: room for room in Room.objects.filter(pk__in=[x.data for x in s])}
 
-    system_time_by_id = get_times_by_system(system='forum.room', ids=[x.data for x in s])
-    user_time_by_id = get_times_for_user_by_system(user=request.user, system='forum.room', ids=[x.data for x in s])
+    system_time_by_id = get_times_by_system(system='forum_room', ids=[x.data for x in s])
+    user_time_by_id = get_times_for_user_by_system(user=request.user, system='forum_room', ids=[x.data for x in s])
 
     has_unread = False
 
@@ -334,6 +334,10 @@ def delete(request, room_pk, message_pk):
 def api_unread(request):
     data = request.POST if request.method == 'POST' else request.GET
     if authenticate(request=request, username=data['username'], password=data['password']):
-        return HttpResponse(f'{len(unread_items(user=request.user))}')
+        unread = unread_items(user=request.user)
+        if unread:
+            return HttpResponse(f'{len(unread)}')
+        else:
+            return HttpResponse(status=204)
     else:
-        return HttpResponse('Failed to log in')
+        return HttpResponse('Failed to log in', status=403)

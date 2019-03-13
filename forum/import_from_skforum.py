@@ -79,9 +79,9 @@ def import_times():
     for row in cursor.fetchall():
         try:
             if row[0] is None:
-                SystemTime.objects.create(data=row[1], system='forum.room', time=row[3])
+                SystemTime.objects.create(data=row[1], system='forum_room', time=row[3])
             else:
-                UserTime.objects.create(user_id=row[0], data=row[1], system='forum.room', time=row[2])
+                UserTime.objects.create(user_id=row[0], data=row[1], system='forum_room', time=row[2])
         except Exception as e:
             print(e)
 
@@ -129,7 +129,7 @@ def import_subscriptions():
 
                     Subscription.objects.create(
                         user_id=user,
-                        system='forum.room',
+                        system='forum_room',
                         data=room_pk,
                         subscription_type=SubscriptionTypes.active if system == 0 else SubscriptionTypes.passive
                     )
@@ -150,6 +150,6 @@ def update_room_times():
     for room in Room.objects.all():
         try:
             last_time = Message.objects.filter(room=room).order_by('-last_changed_time')[0].last_changed_time
-            set_time_for_system(id=room.pk, system='forum.room', time=last_time)
+            set_time_for_system(id=room.pk, system='forum_room', time=last_time)
         except IndexError:
             pass

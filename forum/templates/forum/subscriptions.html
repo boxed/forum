@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block extra_head %}
-    <meta http-equiv="refresh" content="60">
+{#    <meta http-equiv="refresh" content="60">#}
     <base target="{% block target %}main{% endblock %}">
 
     <script>
@@ -14,11 +14,11 @@
             let toggler = document.getElementById('toggle_passive');
             if (passive.className === 'menu passive') {
                 passive.className = 'menu';
-                toggler.textContent = 'Hide passive';
+                toggler.innerHTML = '<i class="fas fa-chevron-up"></i>';
             }
             else {
                 passive.className = 'menu passive';
-                toggler.textContent = 'Show passive';
+                toggler.innerHTML = '<i class="fas fa-chevron-down"></i>';
             }
         }
     </script>
@@ -37,7 +37,9 @@
 
     {% include "forum/subscription_links.html" with list=active id='active' %}
 
-    <div id="toggle_passive" onclick="toggle_passive()">Show passive</div>
+    <ul class="menu">
+        <li><a style="text-align: center; padding-left: 0;" onclick="toggle_passive()" id="toggle_passive"><i class="fas fa-chevron-down"></i></a></li>
+    </ul>
 
     {% include "forum/subscription_links.html" with list=passive id='passive' %}
 
