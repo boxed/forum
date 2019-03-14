@@ -7,3 +7,4 @@ pyyaml
 ua-parser
 user-agents
 django-user-agents
+sentry-sdk==0.7.6
