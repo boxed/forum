@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.urls import path
 import forum.views as views
+import forum2.views as f2views
 
 urlpatterns = [
     path('', views.index),
@@ -29,4 +30,5 @@ urlpatterns = [
     path('rooms/<int:room_pk>/message/<int:message_pk>/delete/', views.delete),
 
     path('api/0/unread/', views.api_unread),
+    path('error_test/', f2views.error_test),
 ]
