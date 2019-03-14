@@ -10,6 +10,7 @@ from datetime import datetime
 
 
 # noinspection PyShadowingBuiltins
+from itertools import groupby
 from typing import Optional, List, Dict, Tuple
 
 DEFAULT_TIME = datetime(2001, 1, 1)
@@ -22,14 +23,14 @@ def get_time_by_data_and_system(*, id: int, system: str, time: Optional[datetime
     return SystemTime.objects.get_or_create(data=id, system=system, defaults=dict(time=time))[0].time
 
 
-def get_times(*, ids: List[int]) -> Dict[Tuple[str, int], datetime]:
+def get_times(*, ids: List[Tuple[str, int]]):
     from .models import SystemTime
-    times = SystemTime.objects.filter(data__in=ids)
-    time_by_data = {(x.system, x.data): x.time for x in times}
-    return {
-        id: time_by_data.get(id, DEFAULT_TIME)
-        for id in ids
-    }
+
+    time_by_system_by_data = {}
+    for system, ids_ in groupby(ids, key=lambda x: x[0]):
+        time_by_system_by_data[system] = get_times_by_system(system=system, ids=[x[1] for x in ids_])
+
+    return time_by_system_by_data
 
 
 def get_times_by_system(*, system: str, ids: List[int]) -> Dict[int, datetime]:
@@ -54,14 +55,14 @@ def get_time(*, user, system: str, id: int) -> datetime:
     return UserTime.objects.get_or_create(user=user, data=id, system=system, defaults=dict(time=DEFAULT_TIME))[0].time
 
 
-def get_times_for_user(*, user, ids: List[int]):
+def get_times_for_user(*, user, ids: List[Tuple[str, int]]):
     from .models import UserTime
-    times = UserTime.objects.filter(user=user, data__in=ids)
-    time_by_data = {(x.system, x.data): x.time for x in times}
-    return {
-        id: time_by_data.get(id, DEFAULT_TIME)
-        for id in ids
-    }
+
+    time_by_system_by_data = {}
+    for system, ids_ in groupby(ids, key=lambda x: x[0]):
+        time_by_system_by_data[system] = get_times_for_user_by_system(user=user, system=system, ids=[x[1] for x in ids_])
+
+    return time_by_system_by_data
 
 
 def get_times_for_user_by_system(*, user, system: str, ids: List[int]):
@@ -84,19 +85,28 @@ def is_unread(*, user, system: str, id: int):
     return get_time(user=user, system=system, id=id) < get_time_by_data_and_system(system=system, id=id)
 
 
-def unread_items(*, user, system=None):
+def unread_items(*, user):
     from unread.models import Subscription
 
     subscriptions = Subscription.objects.filter(user=user)
-    if system is not None:
-        subscriptions = subscriptions.filter(system=system)
     s = list(subscriptions)
-    system_time_by_id = get_times(ids=[x.data for x in s], system=system)
-    user_time_by_id = get_times_for_user(user=user, ids=[x.data for x in s], system=system)
+    ids = [(x.system, x.data) for x in s]
+    system_time_by_id_by_system = get_times(ids=ids)
+    user_time_by_id_by_system = get_times_for_user(user=user, ids=ids)
 
-    # TODO: The above isn't correct since there can be two things with the same ID but different systems.. get_times and get_times_for_user are also broken
-
-    return [
-        s for s in s
-        if user_time_by_id.get(s.data, DEFAULT_TIME) < system_time_by_id.get(s.data, DEFAULT_TIME)
-    ]
+    return {
+        system: {
+            id: True
+            for id, time in
+            system_time_by_id.items()
+            if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) < time
+        }
+        for system, system_time_by_id in
+        system_time_by_id_by_system.items()
+    }
+    #
+    # return [
+    #     (system, id)
+    #     for system, id in ids
+    #     if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) < system_time_by_id_by_system[system].get(id, DEFAULT_TIME)
+    # ]

@@ -5,7 +5,6 @@
 {% endblock %}
 
 {% block extra_head %}
-{#    <meta http-equiv="refresh" content="60">#}
     <base target="{% block target %}main{% endblock %}">
 
     <script>
@@ -28,6 +27,9 @@
 {% block content %}
 
     <h1><a href="/subscriptions/">SK</a></h1>
+    <!--
+    TODO: the link above is correct for mobile, but wrong for desktop
+    -->
 
     {% if has_unread %}
         <script>
@@ -47,5 +49,9 @@
     <p></p>
 
     <a href="/logout/" target="_top" style="padding-left: 2rem">log out</a>
+
+    <script>
+        start_subscription_refresh();
+    </script>
 
 {% endblock %}

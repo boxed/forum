@@ -1,3 +1,4 @@
+import json
 import re
 from _sha1 import sha1
 from base64 import b64encode
@@ -294,6 +295,7 @@ def subscriptions(request, template_name='forum/subscriptions.html'):
             name=room.name,
             system_time=system_time,
             user_time=user_time,
+            object=room,
         )
         if x['unread']:
             has_unread = True
@@ -331,7 +333,7 @@ def delete(request, room_pk, message_pk):
 
 
 @csrf_exempt
-def api_unread(request):
+def api_unread_simple(request):
     data = request.POST if request.method == 'POST' else request.GET
     if authenticate(request=request, username=data['username'], password=data['password']):
         unread = unread_items(user=request.user)
@@ -341,3 +343,7 @@ def api_unread(request):
             return HttpResponse(status=204)
     else:
         return HttpResponse('Failed to log in', status=403)
+
+
+def api_unread(request):
+    return HttpResponse(json.dumps(unread_items(user=request.user)), content_type='application/json')

@@ -1,6 +1,6 @@
 {% load forum %}
 <tr{{ bound_row.rendered_attrs }} id="subject_tr{{ row.id }}" class="message_row1">
-    <td style="border-left: {{ row.indent_rem }}rem solid white" onClick="collapseExpand('{{ row.id }}')" class="message">
+    <td style="border-left: {{ row.indent_rem }}rem solid white" class="message">
         <img class="profile_img" src="{{ row.gravatar_url }}"/>
 
         <a href="#">{{ row.user }}</a>
@@ -9,7 +9,7 @@
     </td>
 </tr>
 <tr class="message_row2">
-    <td style="border-left: {{ row.indent_rem }}rem solid white" onClick="collapseExpand('{{ row.id }}')" class="subject">
+    <td style="border-left: {{ row.indent_rem }}rem solid white" class="subject">
         {% if row.first_new %}
             <a name="first_new"></a>
         {% endif %}

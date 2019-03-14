@@ -1,5 +1,5 @@
 <ul class="menu {{ id }}" id="{{ id }}">
     {% for a in list %}
-        <li{% if a.unread %} class="unread"{% endif %}><a href="{{ a.url }}"{% if a.unread %} class="unread"{% endif %}>{{ a.name }}</a></li>
+        <li{% if a.unread %} class="unread"{% endif %} id="forum_room/{{ a.object.pk }}"><a href="{{ a.url }}"{% if a.unread %} class="unread"{% endif %}>{{ a.name }}</a></li>
     {% endfor %}
 </ul>

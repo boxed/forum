@@ -29,6 +29,7 @@ urlpatterns = [
     path('rooms/<int:room_pk>/message/<int:message_pk>/edit/', views.write),
     path('rooms/<int:room_pk>/message/<int:message_pk>/delete/', views.delete),
 
+    path('api/0/unread_simple/', views.api_unread_simple),
     path('api/0/unread/', views.api_unread),
     path('error_test/', f2views.error_test),
 ]
