@@ -335,7 +335,7 @@ def delete(request, room_pk, message_pk):
 @csrf_exempt
 def api_unread_simple(request):
     data = request.POST if request.method == 'POST' else request.GET
-    if authenticate(request=request, username=data['username'], password=data['password']):
+    if request.user.is_authenticated() or authenticate(request=request, username=data['username'], password=data['password']):
         unread = unread_items(user=request.user)
         if unread:
             return HttpResponse(f'{len(unread)}')
