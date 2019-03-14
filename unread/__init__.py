@@ -1,9 +1,6 @@
 from datetime import datetime
 
 # TODO:
-#  - Subscriptions
-#    - Active
-#    - Passive
 #  - Better name for "system"
 #  - Should systems be models in the DB and not just stringly typed?
 #  - Do I need multi level unread? Maybe just system/user is ok?
@@ -104,9 +101,3 @@ def unread_items(*, user):
         for system, system_time_by_id in
         system_time_by_id_by_system.items()
     }
-    #
-    # return [
-    #     (system, id)
-    #     for system, id in ids
-    #     if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) < system_time_by_id_by_system[system].get(id, DEFAULT_TIME)
-    # ]
