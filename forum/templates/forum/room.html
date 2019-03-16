@@ -3,37 +3,7 @@
 {% block content %}
 
     <script>
-        document.body.onscroll = function () {
-            var show_unread_top = false;
-            var show_unread_bottom = false;
-
-            for (let unread_item of document.getElementsByClassName('unread')) {
-                let position = unread_item.getBoundingClientRect();
-                if (position.bottom < 0) {
-                    show_unread_top = true;
-                }
-                if (position.top > window.innerHeight) {
-                    show_unread_bottom = true;
-                }
-
-                if (show_unread_top && show_unread_bottom) {
-                    break;
-                }
-            }
-
-            if (show_unread_top) {
-                document.getElementById('fixed-top-unread').style.display = 'inline';
-            }
-            else {
-                document.getElementById('fixed-top-unread').style.display = 'none';
-            }
-            if (show_unread_bottom) {
-                document.getElementById('fixed-bottom-unread').style.display = 'inline';
-            }
-            else {
-                document.getElementById('fixed-bottom-unread').style.display = 'none';
-            }
-        };
+        document.body.onscroll = onscroll_show_unread;
     </script>
 
     <div id="fixed-top-unread"></div>
@@ -58,4 +28,7 @@
 
     <div id="fixed-bottom-unread"></div>
 
+    <script>
+        start_subscription_refresh_subpage();
+    </script>
 {% endblock %}

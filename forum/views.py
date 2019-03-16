@@ -164,6 +164,7 @@ def write(request, room_pk, message_pk=None):
 
 
 def view_room(request, room_pk):
+    # TODO: @dispatch on this view, and params to be able to customize rendering of the room
     room = get_object_or_404(Room, pk=room_pk)
 
     user_time = get_time(user=request.user, system='forum_room', id=room_pk)
@@ -291,7 +292,7 @@ def subscriptions(request, template_name='forum/subscriptions.html'):
         room = room_by_pk[subscription.data]
         x = dict(
             url=room.get_absolute_url() + '#first_new',
-            unread=user_time < system_time,
+            unread=user_time <= system_time,
             name=room.name,
             system_time=system_time,
             user_time=user_time,
@@ -335,7 +336,7 @@ def delete(request, room_pk, message_pk):
 @csrf_exempt
 def api_unread_simple(request):
     data = request.POST if request.method == 'POST' else request.GET
-    if request.user.is_authenticated() or authenticate(request=request, username=data['username'], password=data['password']):
+    if request.user.is_authenticated or authenticate(request=request, username=data['username'], password=data['password']):
         unread = unread_items(user=request.user)
         if unread:
             return HttpResponse(f'{len(unread)}')
