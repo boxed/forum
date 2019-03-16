@@ -16,6 +16,7 @@ Including another URLconf
 from django.urls import path
 import forum.views as views
 import forum2.views as f2views
+import unread.views as unread_views
 
 urlpatterns = [
     path('', views.index),
@@ -28,6 +29,9 @@ urlpatterns = [
     path('rooms/<int:room_pk>/write/', views.write),
     path('rooms/<int:room_pk>/message/<int:message_pk>/edit/', views.write),
     path('rooms/<int:room_pk>/message/<int:message_pk>/delete/', views.delete),
+
+    path('/subscribe/stop/<str:system>/<id:data>/', unread_views.stop),
+    path('/subscribe/start/<str:system>/<id:data>/', unread_views.start),
 
     path('api/0/unread_simple/', views.api_unread_simple),
     path('api/0/unread/', views.api_unread),
