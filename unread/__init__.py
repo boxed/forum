@@ -96,7 +96,7 @@ def unread_items(*, user):
             id: True
             for id, time in
             system_time_by_id.items()
-            if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) < time
+            if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) <= time
         }
         for system, system_time_by_id in
         system_time_by_id_by_system.items()
