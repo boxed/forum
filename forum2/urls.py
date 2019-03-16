@@ -30,8 +30,8 @@ urlpatterns = [
     path('rooms/<int:room_pk>/message/<int:message_pk>/edit/', views.write),
     path('rooms/<int:room_pk>/message/<int:message_pk>/delete/', views.delete),
 
-    path('/subscribe/stop/<str:system>/<id:data>/', unread_views.stop),
-    path('/subscribe/start/<str:system>/<id:data>/', unread_views.start),
+    path('/subscribe/stop/<str:system>/<int:data>/', unread_views.stop),
+    path('/subscribe/start/<str:system>/<int:data>/', unread_views.start),
 
     path('api/0/unread_simple/', views.api_unread_simple),
     path('api/0/unread/', views.api_unread),
