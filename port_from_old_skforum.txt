@@ -1,4 +1,0 @@
-insert into forum_message (text, room_id, id, user_id, last_changed_time, last_changed_by_id, path, parent_id, visible, has_replies, time_created)
-
-select CONCAT(subject, '\n', body), area_id, id, user_id, last_changed_time, last_changed_by_id, path, parent_id, visible, has_replies, time_created from forum2.forum_message where area_id = 4
-
