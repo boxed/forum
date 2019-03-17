@@ -186,7 +186,6 @@ def view_room(request, room_pk):
         table__header__template=Template(''),
         table__row__template=get_template('forum/message.html'),
         table__row__attrs=dict(
-            # id=lambda row, **_: row.pk,
             class__indent_0=lambda row, **_: row.indent == 0,
             class__message=True,
             class__current_user=lambda row, **_: request.user == row.user,
