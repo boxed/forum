@@ -251,6 +251,7 @@ def subscriptions(request, template_name='forum/subscriptions.html'):
             active=active,
             passive=passive,
             has_unread=has_unread,
+            is_mobile=request.user_agent.is_mobile,
         )
     )
 

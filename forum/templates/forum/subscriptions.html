@@ -25,17 +25,13 @@
 {% endblock %}
 
 {% block content %}
-
-    <h1><a href="/subscriptions/">SK</a></h1>
-    <!--
-    TODO: the link above is correct for mobile, but wrong for desktop
-    -->
-
-    {% if has_unread %}
-        <script>
-            window.parent.document.title = '* {{ user }} - SKForum';
-        </script>
-    {% endif %}
+    <h1>
+        {% if is_mobile %}
+            SK
+        {% else %}
+            <a href="/welcome/">SK</a>
+        {% endif %}
+    </h1>
 
     {% include "forum/subscription_links.html" with list=active id='active' %}
 

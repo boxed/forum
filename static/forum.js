@@ -28,6 +28,7 @@ function update_subscription() {
 	request.onload = function () {
 		if (request.status === 200) {
 			var response = JSON.parse(request.response);
+			var has_unread = false;
 			for (var menu_item of document.getElementsByTagName('li')) {
 				var system_id = menu_item.id.split("/");
 				if (system_id.length === 2) {
@@ -35,11 +36,23 @@ function update_subscription() {
 					var id = system_id[1];
 					if (response[system][id]) {
 						menu_item.className = 'unread';
-						// TODO: update title
+						has_unread = true;
 					} else {
 						menu_item.className = '';
 					}
 				}
+			}
+			if (has_unread) {
+				if (!window.parent.document.title.startsWith('* ')) {
+					window.parent.document.title = '* ' + window.parent.document.title;
+				}
+				window.document.getElementById('favicon').setAttribute('href', "static/killing-icon-unread.png");
+			}
+			else {
+				if (window.parent.document.title.startsWith('* ')) {
+					window.parent.document.title = window.parent.document.title.slice(2);
+				}
+				window.document.getElementById('favicon').setAttribute('href', "static/killing-icon.png");
 			}
 		}
 	}

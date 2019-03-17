@@ -92,7 +92,7 @@ def unread_items(*, user):
     system_time_by_id_by_system = get_times(data_list=ids)
     user_time_by_id_by_system = get_times_for_user(user=user, data_list=ids)
 
-    return {
+    foo = {
         system: {
             id: True
             for id, time in
@@ -102,6 +102,7 @@ def unread_items(*, user):
         for system, system_time_by_id in
         system_time_by_id_by_system.items()
     }
+    return {k: v for k, v in foo.items() if v}
 
 
 def is_subscribed(*, user, system: str, data: int) -> bool:
