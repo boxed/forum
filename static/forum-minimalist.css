@@ -203,6 +203,12 @@ margin: 0.67rem 0;
     display: none;
 }
 
+#header-tools {
+    position: fixed;
+    right: 10px;
+    top: 15px;
+}
+
 .fixed-header-padding {
     height: var(--fixed-header-height);
 }

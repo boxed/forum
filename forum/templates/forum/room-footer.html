@@ -12,12 +12,6 @@
 
         <span class="tool-middle">
 
-            {% if is_subscribed %}
-                <a href="/subscribe/stop/forum_room/{{ room.pk }}/">Unsubscribe</a>
-            {% else %}
-                <a href="/subscribe/start/forum_room/{{ room.pk }}/">Subscribe</a>
-            {% endif %}
-
             {% if not show_hidden %}
                 <a class="button-ish" href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
             {% else %}

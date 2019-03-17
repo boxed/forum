@@ -3,7 +3,6 @@ function start_subscription_refresh() {
 }
 
 function start_subscription_refresh_subpage() {
-	// TODO: don't do this on desktop
 	setInterval(update_unread_back_button, 2000);
 }
 

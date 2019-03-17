@@ -14,6 +14,14 @@
         </h1>
 
         <span id="navigate-back"><a href="/"><i class="fas fa-chevron-left"></i> menu</a></span>
+
+        <span id="header-tools">
+            {% if is_subscribed %}
+                <a href="/subscribe/stop/forum_room/{{ room.pk }}/">Unsubscribe</a>
+            {% else %}
+                <a href="/subscribe/start/forum_room/{{ room.pk }}/">Subscribe</a>
+            {% endif %}
+        </span>
     </div>
 
     <div class="fixed-header-padding"></div>
@@ -28,7 +36,9 @@
 
     <div id="fixed-bottom-unread"></div>
 
-    <script>
-        start_subscription_refresh_subpage();
-    </script>
+    {% if is_mobile %}
+        <script>
+            start_subscription_refresh_subpage();
+        </script>
+    {% endif %}
 {% endblock %}

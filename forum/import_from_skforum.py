@@ -150,6 +150,6 @@ def update_room_times():
     for room in Room.objects.all():
         try:
             last_time = Message.objects.filter(room=room).order_by('-last_changed_time')[0].last_changed_time
-            set_time_for_system(id=room.pk, system='forum_room', time=last_time)
+            set_time_for_system(data=room.pk, system='forum_room', time=last_time)
         except IndexError:
             pass
