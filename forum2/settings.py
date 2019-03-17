@@ -162,16 +162,16 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 DATE_FORMAT = 'Y-m-d'
 
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
-sentry_sdk.init(
-    dsn="https://cc753814601047d695eae69e4b366c48@sentry.io/1415562",
-    integrations=[DjangoIntegration()]
-)
-
-
 try:
     from .settings_local import *
 except ImportError:
     pass
+
+if not DEBUG:
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
+    sentry_sdk.init(
+        dsn="https://cc753814601047d695eae69e4b366c48@sentry.io/1415562",
+        integrations=[DjangoIntegration()]
+    )

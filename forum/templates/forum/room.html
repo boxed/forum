@@ -8,38 +8,7 @@
 
     <div id="fixed-top-unread"></div>
 
-    <div class="fixed-header">
-        <h1>
-            {{ room.name }}
-        </h1>
-
-        <span id="navigate-back"><a href="/"><i class="fas fa-chevron-left"></i> menu</a></span>
-
-        <span id="header-tools">
-            <nav>
-                <label for="drop" class="toggle"><i class="fas fa-bars"></i></label>
-                <input type="checkbox" id="drop" />
-                <ul class="tools-menu">
-                    <li>
-                        {% if is_subscribed %}
-                            <a href="/subscribe/stop/forum_room/{{ room.pk }}/">Unsubscribe</a>
-                        {% else %}
-                            <a href="/subscribe/start/forum_room/{{ room.pk }}/">Subscribe</a>
-                        {% endif %}
-                    </li>
-
-                    <li>
-                        {% if not show_hidden %}
-                            <a href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
-                        {% else %}
-                            <a href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&show_hidden=0#first_new" name="hide_deleted" target="_self">Hide deleted</a>
-                        {% endif %}
-                    </li>
-                </ul>
-            </nav>
-
-        </span>
-    </div>
+    {% include "forum/room-header.html" %}
 
     <div class="fixed-header-padding"></div>
 
@@ -47,9 +16,7 @@
 
     <hr>
 
-    <div id="room-footer-bottom">
-        {% include "forum/room-footer.html" %}
-    </div>
+    {% include "forum/room-footer.html" %}
 
     <div id="fixed-bottom-unread"></div>
 
