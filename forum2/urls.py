@@ -15,14 +15,16 @@ Including another URLconf
 """
 from django.urls import path
 import forum.views as views
+import forum2.views
 import forum2.views as f2views
+import unread.views
 import unread.views as unread_views
 
 urlpatterns = [
-    path('', views.index),
-    path('login/', views.login),
-    path('welcome/', views.welcome),
-    path('logout/', views.logout),
+    path('', forum2.views.index),
+    path('login/', forum2.views.login),
+    path('welcome/', forum2.views.welcome),
+    path('logout/', forum2.views.logout),
     path('subscriptions/', views.subscriptions),
     path('rooms/', views.rooms),
     path('rooms/<int:room_pk>/', views.view_room),
@@ -33,7 +35,7 @@ urlpatterns = [
     path('/subscribe/stop/<str:system>/<int:data>/', unread_views.stop),
     path('/subscribe/start/<str:system>/<int:data>/', unread_views.start),
 
-    path('api/0/unread_simple/', views.api_unread_simple),
-    path('api/0/unread/', views.api_unread),
+    path('api/0/unread_simple/', unread.views.api_unread_simple),
+    path('api/0/unread/', unread.views.api_unread),
     path('error_test/', f2views.error_test),
 ]

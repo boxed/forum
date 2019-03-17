@@ -1,18 +1,13 @@
-import json
 import re
-from _sha1 import sha1
-from base64 import b64encode
 from datetime import datetime
 
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
-from django.contrib.auth import authenticate
 from django.db.models import BinaryField
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from django.views.decorators.csrf import csrf_exempt
 from tri.form import register_field_factory, Form, Field, Link, bool_parse
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
@@ -20,67 +15,13 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread import get_time, set_time, set_time_for_system, DEFAULT_TIME, unread_items, get_times_by_system, get_times_for_user_by_system
+from unread import get_time, set_time, set_time_for_system, DEFAULT_TIME, get_times_by_system, get_times_for_user_by_system
 from unread.models import Subscription, SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
 
 
 Form.Meta.base_template = 'forum/base.html'
-
-
-def login(request):
-    from django.contrib.auth import login
-
-    if request.user.is_authenticated:
-        return HttpResponse('Already logged in')
-
-    class LoginForm(Form):
-        username = Field()
-        password = Field.password()
-        next = Field.hidden(initial=request.GET.get('next', '/'))
-
-        def is_valid(self):
-            if not super(LoginForm, self).is_valid():
-                return False
-
-            username = self.fields_by_name['username'].value
-            password = self.fields_by_name['password'].value
-
-            if username and password:
-                user = User.objects.get(username=username)
-                self.extra.user = user
-                if authenticate(request=request, username=username, password=password):
-                    return True
-
-                try:
-                    username = User.objects.get(username=username)
-                    if b64encode(sha1(password.encode()).digest()).decode() == user.password:
-                        user.set_password(password)  # upgrade password
-                        user.save()
-                    authenticate(request=request, username=username, password=password)
-                except User.DoesNotExist:
-                    pass
-
-            return False
-
-    form = LoginForm(request)
-
-    if request.method == 'POST' and form.is_valid():
-        login(request, form.extra.user)
-        return HttpResponseRedirect(form.fields_by_name['next'].value or '/')
-
-    return render(request, 'forum/login.html', context=dict(form=form, url='/'))
-
-
-def index(request):
-    if request.user_agent.is_mobile:
-        return subscriptions(request, template_name='forum/index_mobile.html')
-    return render(request, template_name='forum/index.html')
-
-
-def welcome(request):
-    return render(request, template_name='forum/welcome.html')
 
 
 def rooms(request):
@@ -267,12 +208,6 @@ def view_room(request, room_pk):
     return result
 
 
-def logout(request):
-    from django.contrib.auth import logout
-    logout(request)
-    return HttpResponseRedirect('/login/')
-
-
 def subscriptions(request, template_name='forum/subscriptions.html'):
     s = list(Subscription.objects.filter(user=request.user, system='forum_room'))
 
@@ -333,18 +268,3 @@ def delete(request, room_pk, message_pk):
         return render(request, template_name='forum/delete.html', context=dict(next=request.META.get('HTTP_REFERER'), message=message))
 
 
-@csrf_exempt
-def api_unread_simple(request):
-    data = request.POST if request.method == 'POST' else request.GET
-    if request.user.is_authenticated or authenticate(request=request, username=data['username'], password=data['password']):
-        unread = unread_items(user=request.user)
-        if unread:
-            return HttpResponse(f'{len(unread)}')
-        else:
-            return HttpResponse(status=204)
-    else:
-        return HttpResponse('Failed to log in', status=403)
-
-
-def api_unread(request):
-    return HttpResponse(json.dumps(unread_items(user=request.user)), content_type='application/json')
