@@ -80,8 +80,10 @@ def set_time(*, user, system: str, data: int, time: datetime) -> None:
 
 
 def is_unread(*, user, system: str, data: int):
-    return get_time(user=user, system=system, data=data) < get_time_by_data_and_system(system=system, data=data)
-
+    return get_time(user=user, system=system, data=data) <= get_time_by_data_and_system(system=system, data=data)
+    
+def is_unread_(item_time, user_time):
+    return user_time <= item_time
 
 def unread_items(*, user):
     from unread.models import Subscription
