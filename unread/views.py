@@ -37,4 +37,6 @@ def api_unread_simple(request):
 
 
 def api_unread(request):
+    if not request.user.is_authenticated:
+        return HttpResponse('Not logged in', status=401)
     return HttpResponse(json.dumps(unread_items(user=request.user)), content_type='application/json')
