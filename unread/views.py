@@ -8,7 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from unread import unread_items
 
 
-def start(request, system, data):
+def start_subscription(request, system, data):
     # TODO:
     #  - ask for active or passive
     #  - implement
@@ -16,7 +16,7 @@ def start(request, system, data):
     pass
 
 
-def stop(request, system, data):
+def stop_subscription(request, system, data):
     # TODO:
     #  - ask for confirmation
     #  - implement
