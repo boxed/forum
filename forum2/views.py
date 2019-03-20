@@ -14,6 +14,9 @@ def error_test(request):
     asd()
 
 
+def blank(request):
+    return HttpResponse('')
+
 def logout(request):
     from django.contrib.auth import logout
     logout(request)
