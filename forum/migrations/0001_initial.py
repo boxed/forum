@@ -41,7 +41,7 @@ class Migration(migrations.Migration):
                 ('has_replies', models.BooleanField(default=False)),
                 ('last_changed_by', models.ForeignKey(null=True, on_delete=django.db.models.deletion.PROTECT, related_name='+', to=settings.AUTH_USER_MODEL)),
                 ('parent', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.PROTECT, to='forum.Message')),
-                ('room', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='forum_room')),
+                ('room', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='forum.Room')),
                 ('user', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
             ],
             options={
