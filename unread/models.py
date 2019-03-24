@@ -11,7 +11,7 @@ class Model(models.Model):
         abstract = True
 
 
-DATA_LENGTH = 512
+DATA_LENGTH = 255
 
 
 class SystemTime(Model):
