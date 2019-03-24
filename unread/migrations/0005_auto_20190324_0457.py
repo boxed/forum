@@ -24,19 +24,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='subscription',
             name='identifier',
-            field=models.CharField(db_index=True, default='', max_length=512),
+            field=models.CharField(db_index=True, default='', max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='systemtime',
             name='identifier',
-            field=models.CharField(db_index=True, default='', max_length=512),
+            field=models.CharField(db_index=True, default='', max_length=255),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='usertime',
             name='identifier',
-            field=models.CharField(db_index=True, default='', max_length=512),
+            field=models.CharField(db_index=True, default='', max_length=255),
             preserve_default=False,
         ),
 
