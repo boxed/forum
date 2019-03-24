@@ -11,29 +11,34 @@ class Model(models.Model):
         abstract = True
 
 
+DATA_LENGTH = 512
+
+
 class SystemTime(Model):
     system = models.CharField(max_length=255, db_index=True)
     data = models.BigIntegerField(db_index=True)
+    identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
     time = models.DateTimeField()
 
     class Meta:
-        unique_together = ('system', 'data')
+        unique_together = ('identifier',)
 
     def __repr__(self):
-        return f'SystemTime {self.system}/{self.data}: {self.time}'
+        return f'SystemTime {self.identifier}: {self.time}'
 
 
 class UserTime(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
     system = models.CharField(max_length=255, db_index=True)
+    identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
     data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
 
     class Meta:
-        unique_together = ('user', 'system', 'data')
+        unique_together = ('user', 'identifier')
 
     def __repr__(self):
-        return f'UserTime for {self.user} {self.system}/{self.data}: {self.time}'
+        return f'UserTime for {self.user} {self.identifier}: {self.time}'
 
 
 class SubscriptionType(Token):
@@ -50,8 +55,9 @@ class Subscription(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
     system = models.CharField(max_length=255, db_index=True)
     data = models.BigIntegerField(db_index=True)
+    identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
     # noinspection PyTypeChecker
     subscription_type = models.CharField(max_length=50, choices=[(x.name, x.display_name) for x in SubscriptionTypes], db_index=True)
 
     class Meta:
-        unique_together = ('user', 'system', 'data')
+        unique_together = ('user', 'identifier',)
