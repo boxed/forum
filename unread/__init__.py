@@ -1,122 +1,134 @@
+from dataclasses import dataclass
 from datetime import datetime
 
-# TODO:
-#  - Better name for "system"
-#  - Better name for "data"
-#  - Should systems be models in the DB and not just stringly typed?
-#  - Do I need multi level unread? Maybe just system/user is ok?
+from typing import List, Dict, Any
 
-
-# noinspection PyShadowingBuiltins
-from itertools import groupby
-from typing import Optional, List, Dict, Tuple
+from tri.token import Token, TokenAttribute, TokenContainer
 
 DEFAULT_TIME = datetime(2001, 1, 1)
 
 
-def get_time_by_data_and_system(*, data: int, system: str, time: Optional[datetime] = None):
+def get_time(*, identifier: str):
     from .models import SystemTime
-    if time is None:
-        time = DEFAULT_TIME
-    return SystemTime.objects.get_or_create(data=data, system=system, defaults=dict(time=time))[0].time
+    try:
+        return SystemTime.objects.get(identifier=identifier).time
+    except SystemTime.DoesNotExist:
+        return DEFAULT_TIME
 
 
-def get_times(*, data_list: List[Tuple[str, int]]):
+def get_times(*, identifiers: List[str]) -> Dict[str, datetime]:
     from .models import SystemTime
 
-    time_by_system_by_data = {}
-    for system, ids_ in groupby(data_list, key=lambda x: x[0]):
-        time_by_system_by_data[system] = get_times_by_system(system=system, data_list=[x[1] for x in ids_])
+    time_by_identifier = {x.identifier: x.time for x in SystemTime.objects.filter(identifier__in=identifiers)}
 
-    return time_by_system_by_data
-
-
-def get_times_by_system(*, system: str, data_list: List[int]) -> Dict[int, datetime]:
-    from .models import SystemTime
-    times = SystemTime.objects.filter(data__in=data_list).filter(system=system)
-    time_by_data = {x.data: x.time for x in times}
     return {
-        id: time_by_data.get(id, DEFAULT_TIME)
-        for id in data_list
+        identifier: time_by_identifier.get(identifier, DEFAULT_TIME)
+        for identifier in identifiers
     }
 
 
-# noinspection PyShadowingBuiltins
-def set_time_for_system(*, data, system: str, time: datetime):
+def set_time(*, identifier: str = None, time: datetime): #, item_id: Any = None, namespace: str = None):
+    # assert identifier or (item_id and namespace), "Either use the identifier parameter, or both namespace and item_id"
+    # if identifier is None:
+    #     identifier = f'{namespace}:{item_id}'
     from .models import SystemTime
-    SystemTime.objects.update_or_create(data=data, system=system, defaults=dict(time=time))
+    SystemTime.objects.update_or_create(identifier=identifier, defaults=dict(time=time))
 
 
-# noinspection PyShadowingBuiltins
-def get_time(*, user, system: str, data: int) -> datetime:
+def get_user_time(*, user, identifier: str) -> datetime:
     from .models import UserTime
-    return UserTime.objects.get_or_create(user=user, data=data, system=system, defaults=dict(time=DEFAULT_TIME))[0].time
+    try:
+        return UserTime.objects.get(user=user, identifier=identifier).time
+    except UserTime.DoesNotExist:
+        return DEFAULT_TIME
 
 
-def get_times_for_user(*, user, data_list: List[Tuple[str, int]]):
+def get_user_times(*, user, identifiers: List[str]) -> Dict[str, datetime]:
     from .models import UserTime
 
-    time_by_system_by_data = {}
-    for system, ids_ in groupby(data_list, key=lambda x: x[0]):
-        time_by_system_by_data[system] = get_times_for_user_by_system(user=user, system=system, data_list=[x[1] for x in ids_])
+    time_by_identifier = {x.identifier: x.time for x in UserTime.objects.filter(user=user, identifier__in=identifiers)}
 
-    return time_by_system_by_data
-
-
-def get_times_for_user_by_system(*, user, system: str, data_list: List[int]):
-    from .models import UserTime
-    times = UserTime.objects.filter(user=user, data__in=data_list, system=system)
-    time_by_data = {x.data: x.time for x in times}
     return {
-        id: time_by_data.get(id, DEFAULT_TIME)
-        for id in data_list
+        identifier: time_by_identifier.get(identifier, DEFAULT_TIME)
+        for identifier in identifiers
     }
 
 
-# noinspection PyShadowingBuiltins
-def set_time(*, user, system: str, data: int, time: datetime) -> None:
+def set_user_time(*, user, identifier: str, time: datetime) -> None:
     from .models import UserTime
-    UserTime.objects.update_or_create(user=user, data=data, system=system, defaults=dict(time=time))
+    UserTime.objects.update_or_create(user=user, identifier=identifier, defaults=dict(time=time))
 
 
-def is_unread(*, user, system: str, data: int):
-    return get_time(user=user, system=system, data=data) <= get_time_by_data_and_system(system=system, data=data)
-    
-def is_unread_(item_time, user_time):
+def is_unread(*, user, identifier: str) -> bool:
+    return get_user_time(user=user, identifier=identifier) <= get_time(identifier=identifier)
+
+
+def is_unread_(user_time, item_time):
     return user_time <= item_time
 
+
+# Don't think this thing is really needed... subscription_data does all of it better?
 def unread_items(*, user):
     from unread.models import Subscription
 
-    subscriptions = Subscription.objects.filter(user=user)
-    s = list(subscriptions)
-    ids = [(x.system, x.data) for x in s]
-    system_time_by_id_by_system = get_times(data_list=ids)
-    user_time_by_id_by_system = get_times_for_user(user=user, data_list=ids)
+    identifiers = Subscription.objects.filter(user=user).values_list('identifier', flat=True)
+    system_time_by_identifier = get_times(identifiers=identifiers)
+    user_time_by_identifier = get_user_times(user=user, identifiers=identifiers)
 
-    foo = {
-        system: {
-            id: True
-            for id, time in
-            system_time_by_id.items()
-            if user_time_by_id_by_system[system].get(id, DEFAULT_TIME) <= time
-        }
-        for system, system_time_by_id in
-        system_time_by_id_by_system.items()
+    return {
+        identifier: is_unread_(user_time=user_time_by_identifier[identifier], item_time=system_time_by_identifier[identifier])
+        for identifier in identifiers
     }
-    return {k: v for k, v in foo.items() if v}
+
+class SubscriptionType(Token):
+    name = TokenAttribute()
+    display_name = TokenAttribute(value=lambda name, **_: name.title())
 
 
-def is_subscribed(*, user, system: str, data: int) -> bool:
+class SubscriptionTypes(TokenContainer):
+    active = SubscriptionType()
+    passive = SubscriptionType()
+
+
+@dataclass
+class SubscriptionData:
+    is_unread: bool
+    user_time: datetime
+    item_time: datetime
+    subscription_type: SubscriptionType
+
+
+def subscription_data(*, user) -> Dict[str, SubscriptionData]:
     from unread.models import Subscription
-    return Subscription.objects.filter(user=user, system=system, data=data).exists()
+
+    foo = Subscription.objects.filter(user=user).values_list('identifier', 'subscription_type')
+    identifiers = [x[0] for x in foo]
+    subscription_type_by_identifier = {x[0]: x[1] for x in foo}
+    item_time_by_identifier = get_times(identifiers=identifiers)
+    user_time_by_identifier = get_user_times(user=user, identifiers=identifiers)
+
+    return {
+        identifier: SubscriptionData(
+            is_unread=is_unread_(user_time=user_time_by_identifier[identifier], item_time=item_time_by_identifier[identifier]),
+            user_time=user_time_by_identifier[identifier],
+            item_time=item_time_by_identifier[identifier],
+            subscription_type=subscription_type_by_identifier[identifier],
+        )
+        for identifier in identifiers
+    }
 
 
-def subscribe(*, user, system: str, data: int, subscription_type: str):
+def is_subscribed(*, user, identifier: str) -> bool:
     from unread.models import Subscription
-    Subscription.objects.create(user=user, system=system, data=data, subscription_type=subscription_type)
+    return Subscription.objects.filter(user=user, identifier=identifier).exists()
 
 
-def unsubscribe(*, user, system: str, data: int, subscription_type: str):
+def subscribe(*, user, identifier: str, subscription_type: str):
     from unread.models import Subscription
-    Subscription.objects.filter(user=user, system=system, data=data, subscription_type=subscription_type).delete()
+    unsubscribe(user=user, identifier=identifier)
+    Subscription.objects.create(user=user, identifier=identifier, subscription_type=subscription_type)
+
+
+def unsubscribe(*, user, identifier: str):
+    from unread.models import Subscription
+    Subscription.objects.filter(user=user, identifier=identifier).delete()

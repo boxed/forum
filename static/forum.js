@@ -30,16 +30,11 @@ function update_subscription() {
 			var response = JSON.parse(request.response);
 			var has_unread = false;
 			for (var menu_item of document.getElementsByTagName('li')) {
-				var system_id = menu_item.id.split("/");
-				if (system_id.length === 2) {
-					var system = system_id[0];
-					var id = system_id[1];
-					if (response[system][id]) {
-						menu_item.className = 'unread';
-						has_unread = true;
-					} else {
-						menu_item.className = '';
-					}
+				if (response[menu_item.id]) {
+					menu_item.className = 'unread';
+					has_unread = true;
+				} else {
+					menu_item.className = '';
 				}
 			}
 			if (has_unread) {

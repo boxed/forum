@@ -15,8 +15,8 @@ from tri.table import render_table_to_response, Column
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
-from unread import get_time, set_time, set_time_for_system, DEFAULT_TIME, get_times_by_system, get_times_for_user_by_system, is_subscribed
-from unread.models import Subscription, SubscriptionTypes
+from unread import set_time, get_user_time, set_user_time, is_subscribed, subscription_data
+from unread.models import SubscriptionTypes
 
 register_field_factory(BinaryField, lambda **_: None)
 
@@ -73,7 +73,8 @@ def write(request, room_pk, message_pk=None):
         if instance.parent and not instance.parent.has_replies:
             Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
 
-        set_time_for_system(data=room_pk, system='forum_room', time=instance.last_changed_time)
+        # set_time(item_id=room_pk, namespace='forum/room', time=instance.last_changed_time)
+        set_time(identifier=f'forum/room:{room.pk}', time=instance.last_changed_time)
 
     # noinspection PyShadowingNames
     def redirect(request, redirect_to, form):
@@ -108,7 +109,7 @@ def view_room(request, room_pk):
     # TODO: @dispatch on this view, and params to be able to customize rendering of the room
     room = get_object_or_404(Room, pk=room_pk)
 
-    user_time = get_time(user=request.user, system='forum_room', data=room_pk)
+    user_time = get_user_time(user=request.user, identifier=f'forum/room:{room.pk}')
     show_hidden = bool_parse(request.GET.get('show_hidden', '0'))
 
     def unread_from_here_href(row: Message, **_):
@@ -121,7 +122,7 @@ def view_room(request, room_pk):
     else:
         unread2_time = datetime.now()
 
-    # NOTE: there's a t.save() at the very bottom of this function
+    # NOTE: there's a set_user_time at the very bottom of this function
     if 'unread_from_here' in request.GET:
         user_time = datetime.fromisoformat(request.GET['unread_from_here'])
 
@@ -174,7 +175,7 @@ def view_room(request, room_pk):
             room=room,
             show_hidden=show_hidden,
             time=unread2_time or user_time,
-            is_subscribed=is_subscribed(user=request.user, system='forum_room', data=room.pk),
+            is_subscribed=is_subscribed(user=request.user, identifier=f'forum/room:{room.pk}'),
             is_mobile=request.user_agent.is_mobile,
         ),
         table__data=messages,
@@ -204,41 +205,36 @@ def view_room(request, room_pk):
     if 'unread_from_here' not in request.GET:
         user_time = datetime.now()
 
-    set_time(user=request.user, system='forum_room', data=room.pk, time=user_time)
+    set_user_time(user=request.user, identifier=f'forum/room:{room.pk}', time=user_time)
     return result
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):
-    s = list(Subscription.objects.filter(user=request.user, system='forum_room'))
+    subscription_data_by_identifier = subscription_data(user=request.user)
 
-    room_by_pk = {room.pk: room for room in Room.objects.filter(pk__in=[x.data for x in s])}
+    room_pks = {x.partition(':')[-1] for x in subscription_data_by_identifier.keys()}
 
-    system_time_by_id = get_times_by_system(system='forum_room', data_list=[x.data for x in s])
-    user_time_by_id = get_times_for_user_by_system(user=request.user, system='forum_room', data_list=[x.data for x in s])
+    room_by_identifier = {f'forum/room:{room.pk}': room for room in Room.objects.filter(pk__in=room_pks)}
 
-    has_unread = False
+    has_unread = any(x.is_unread for x in subscription_data_by_identifier.values())
 
     active = []
     passive = []
 
-    for subscription in s:
-        system_time = system_time_by_id.get(subscription.data, DEFAULT_TIME)
-        user_time = user_time_by_id.get(subscription.data, DEFAULT_TIME)
-        room = room_by_pk[subscription.data]
+    for identifier, data in subscription_data_by_identifier.items():
+        room = room_by_identifier[identifier]
         x = dict(
             url=room.get_absolute_url() + '#first_new',
-            unread=user_time <= system_time,
+            unread=data.is_unread,
             name=room.name,
-            system_time=system_time,
-            user_time=user_time,
+            system_time=data.item_time,
+            user_time=data.user_time,
             object=room,
         )
-        if x['unread']:
-            has_unread = True
-        if subscription.subscription_type == SubscriptionTypes.active.name:
+        if data.subscription_type == SubscriptionTypes.active.name:
             active.append(x)
         else:
-            assert subscription.subscription_type == SubscriptionTypes.passive.name
+            assert data.subscription_type == SubscriptionTypes.passive.name
             passive.append(x)
 
     active = sorted(active, key=lambda x: x['name'].lower())
@@ -267,5 +263,3 @@ def delete(request, room_pk, message_pk):
         return HttpResponseRedirect(request.GET.get('next', message.room.get_absolute_url() + '#first_new'))
     else:
         return render(request, template_name='forum/delete.html', context=dict(next=request.META.get('HTTP_REFERER'), message=message))
-
-

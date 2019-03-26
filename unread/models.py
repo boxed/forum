@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from tri.token import TokenContainer, Token, TokenAttribute
+from . import SubscriptionTypes
 
 
 class Model(models.Model):
@@ -15,8 +15,6 @@ DATA_LENGTH = 255
 
 
 class SystemTime(Model):
-    system = models.CharField(max_length=255, db_index=True)
-    data = models.BigIntegerField(db_index=True)
     identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
     time = models.DateTimeField()
 
@@ -29,9 +27,7 @@ class SystemTime(Model):
 
 class UserTime(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
-    system = models.CharField(max_length=255, db_index=True)
     identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
-    data = models.BigIntegerField(db_index=True)
     time = models.DateTimeField()
 
     class Meta:
@@ -41,20 +37,8 @@ class UserTime(Model):
         return f'UserTime for {self.user} {self.identifier}: {self.time}'
 
 
-class SubscriptionType(Token):
-    name = TokenAttribute()
-    display_name = TokenAttribute(value=lambda name, **_: name.title())
-
-
-class SubscriptionTypes(TokenContainer):
-    active = SubscriptionType()
-    passive = SubscriptionType()
-
-
 class Subscription(Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT, db_index=True)
-    system = models.CharField(max_length=255, db_index=True)
-    data = models.BigIntegerField(db_index=True)
     identifier = models.CharField(max_length=DATA_LENGTH, db_index=True)
     # noinspection PyTypeChecker
     subscription_type = models.CharField(max_length=50, choices=[(x.name, x.display_name) for x in SubscriptionTypes], db_index=True)
