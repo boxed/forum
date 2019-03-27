@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'forum',
     'unread',
+    'wiki',
     'tri.form',
     'tri.query',
     'tri.table',
