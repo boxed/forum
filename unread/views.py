@@ -4,23 +4,39 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
+from tri.form import Form, Field
 
 from unread import unread_items
+from unread.models import Subscription
 
 
-def start_subscription(request, system, data):
-    # TODO:
-    #  - ask for active or passive
-    #  - implement
+def change_subscription(request):
+    identifier_ = request.GET['identifier']
+    try:
+        subscription = Subscription.objects.get(user=request.user, identifier=identifier_)
+    except Subscription.DoesNotExist:
+        subscription = None
 
-    pass
+    class ChangeSubscriptionForm(Form):
+        choices = Field.radio(choices=['Subscribe', 'Unsubscribe'], initial='Subscribe')
+        passive = Field.boolean(display_name='Show only when unread', initial=subscription and subscription.subscription_type == 'passive')
+        identifier = Field.hidden(initial=identifier_)
 
+    form = ChangeSubscriptionForm(request)
 
-def stop_subscription(request, system, data):
-    # TODO:
-    #  - ask for confirmation
-    #  - implement
-    pass
+    if request.method == 'POST':
+        if form.fields_by_name.choices.value == 'Subscribe':
+            Subscription.objects.update_or_create(user=request.user, identifier=identifier_, defaults=dict(subscription_type='passive' if form.fields_by_name.passive.value else 'active'))
+        else:
+            subscription.delete()
+
+    return render(
+        request,
+        template_name='unread/change_subscription.html',
+        context=dict(
+            form=form,
+        )
+    )
 
 
 @csrf_exempt

@@ -1,0 +1,18 @@
+{% extends "forum/base.html" %}  {# TODO: how do we set base.html? #}
+
+{% block title %}Change subscription{% endblock %}
+
+{% block body_attributes %}
+    class="form"
+{% endblock %}
+
+{% block content %}
+    <h1>Change subscription</h1>
+    <form method="post"><input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+        <table>
+            {{ form }}
+        </table>
+        <button type="submit">Update</button>
+    </form>
+{% endblock %}
+

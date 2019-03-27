@@ -97,12 +97,29 @@
 
 .form form {
     max-width: 50rem;
+    width: 20rem;
     margin-left: auto;
     margin-right: auto;
 }
 
 .form .links {
     text-align: right;
+}
+
+.form td {
+    white-space: nowrap;
+}
+
+.form table {
+    width: auto;
+}
+
+.form label {
+    padding-right: 1rem;
+}
+
+input[type=radio] {
+    width: auto;
 }
 
 .button-ish {
@@ -332,7 +349,7 @@ nav ul {
     list-style: none;
     position: relative;
     border: 1px solid #e6e7e8;
-    width: 15rem;
+    width: 17rem;
 }
 
 nav ul li {

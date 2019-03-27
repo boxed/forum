@@ -11,11 +11,9 @@
             <input type="checkbox" id="drop" />
             <ul class="tools-menu">
                 <li>
-                    {% if is_subscribed %}
-                        <a href="/subscribe/stop/forum/room/{{ room.pk }}/">Unsubscribe</a>
-                    {% else %}
-                        <a href="/subscribe/start/forum/room/{{ room.pk }}/">Subscribe</a>
-                    {% endif %}
+                    <a href="/subscribe/?identifier=forum/room:{{ room.pk }}/">
+                        Change subscription
+                    </a>
                 </li>
 
                 <li>
