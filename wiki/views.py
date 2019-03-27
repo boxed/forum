@@ -1,3 +1,4 @@
+from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from tri.table import render_table_to_response
 
@@ -23,6 +24,11 @@ def documents(request, context_pk):
 def document(request, context_pk, document_pk):
     del context_pk
     doc = Document.objects.get(pk=document_pk)
+    return render(request, 'wiki/document.html', context=dict(document_version=doc.versions.all().order_by('pk')[0]))
+
+
+def document_by_name(request, context_pk, document_name):
+    doc = Document.objects.get(context__pk=context_pk, name__iexact=document_name)
     return render(request, 'wiki/document.html', context=dict(document_version=doc.versions.all().order_by('pk')[0]))
 
 

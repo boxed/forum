@@ -1,3 +1,4 @@
+pyparsing
 django
 tri.table
 tri.token

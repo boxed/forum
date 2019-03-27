@@ -1,8 +1,9 @@
 {% extends "forum/base.html" %}
 {% load forum %}
+{% load wiki %}
 
 {% block content %}
 
-    {{ document_version.content|pre }}
+    {{ document_version.content|pre|wiki }}
 
 {% endblock %}
