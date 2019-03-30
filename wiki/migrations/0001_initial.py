@@ -16,7 +16,7 @@ class Migration(migrations.Migration):
             name='Context',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(db_index=True, max_length=255)),
+                ('name', models.CharField(db_index=True, max_length=127)),
                 ('custom_data', models.CharField(blank=True, db_index=True, max_length=255, null=True)),
             ],
             options={
@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             name='Document',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(db_index=True, max_length=255)),
+                ('name', models.CharField(db_index=True, max_length=127)),
                 ('custom_data', models.CharField(blank=True, db_index=True, max_length=255, null=True)),
                 ('context', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='wiki.Context')),
             ],
@@ -40,10 +40,10 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('changed_time', models.DateTimeField(auto_created=True)),
-                ('name', models.CharField(db_index=True, max_length=255)),
+                ('name', models.CharField(db_index=True, max_length=127)),
                 ('version', models.IntegerField()),
                 ('content', models.TextField()),
-                ('custom_data', models.CharField(blank=True, db_index=True, max_length=255, null=True)),
+                ('custom_data', models.CharField(blank=True, db_index=True, max_length=127, null=True)),
                 ('document', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='wiki.Document')),
             ],
             options={

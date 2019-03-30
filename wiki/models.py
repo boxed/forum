@@ -23,8 +23,8 @@ class Context(Model):
 class Document(Model):
     context = models.ForeignKey(Context, on_delete=models.PROTECT)
     # This is the current name, so can change
-    name = models.CharField(max_length=255, db_index=True)
-    custom_data = models.CharField(max_length=255, db_index=True, null=True, blank=True)
+    name = models.CharField(max_length=127, db_index=True)
+    custom_data = models.CharField(max_length=127, db_index=True, null=True, blank=True)
 
     class Meta:
         unique_together = ('context', 'name')
