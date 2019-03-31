@@ -17,7 +17,7 @@ class Context(Model):
     custom_data = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
     def get_absolute_url(self):
-        return f'/wiki/{self.pk}/'
+        return f'/wiki/{self.name}/'
 
 
 class Document(Model):
@@ -30,7 +30,7 @@ class Document(Model):
         unique_together = ('context', 'name')
 
     def get_absolute_url(self):
-        return f'/wiki/{self.context.pk}/{self.pk}/'
+        return f'/wiki/{self.context.name}/{self.name}/'
 
 
 class DocumentVersion(Model):
@@ -42,4 +42,4 @@ class DocumentVersion(Model):
     custom_data = models.CharField(max_length=255, db_index=True, null=True, blank=True)
 
     def get_absolute_url(self):
-        return f'/wiki/{self.document.context.pk}/{self.document.pk}/{self.pk}/'
+        return f'/wiki/{self.document.context.name}/{self.document.name}/{self.pk}/'

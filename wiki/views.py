@@ -4,7 +4,7 @@ from tri.table import render_table_to_response
 from wiki.models import Context, Document, DocumentVersion
 
 
-def contexts(request):
+def view_context_list(request):
     return render_table_to_response(
         request=request,
         table__data=Context.objects.all().order_by('name'),
@@ -16,38 +16,30 @@ def contexts(request):
     )
 
 
-def documents(request, context_pk):
+def view_context(request, context_name):
     return render_table_to_response(
         request=request,
-        table__data=Document.objects.filter(context__pk=context_pk).order_by('pk'),
+        table__data=Document.objects.filter(context__name__iexact=context_name).order_by('pk'),
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
         table__include=['name'],
-        context=dict(title=f'Documents of context {Context.objects.get(pk=context_pk)}'),
+        context=dict(title=f'Documents of context {Context.objects.get(name__iexact=context_name)}'),
         template='wiki/list.html',
     )
 
 
-def document(request, context_pk, document_pk):
-    del context_pk
-    doc = Document.objects.get(pk=document_pk)
+def view_document(request, context_name, document_name):
+    doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
     return render(request, 'wiki/document.html', context=dict(document_version=doc.versions.all().order_by('pk')[0]))
 
 
-def document_by_name(request, context_pk, document_name):
-    doc = Document.objects.get(context__pk=context_pk, name__iexact=document_name)
-    return render(request, 'wiki/document.html', context=dict(document_version=doc.versions.all().order_by('pk')[0]))
-
-
-def versions(request, context_pk, document_pk):
-    del context_pk
+def view_version_list(request, context_name, document_name):
     return render_table_to_response(
         request=request,
-        table__data=DocumentVersion.objects.filter(document__pk=document_pk),
+        table__data=DocumentVersion.objects.filter(context__name__iexact=context_name, document__name__iexact=document_name),
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
         template='wiki/list.html',
     )
 
 
-def version(request, context_pk, document_pk, version_pk):
-    del context_pk, document_pk
+def view_version(request, context_name, document_name, version_pk):
     return render(request, 'wiki/document.html', context=dict(document_version=DocumentVersion.objects.get(pk=version_pk)))

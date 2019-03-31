@@ -2,10 +2,9 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path('', views.contexts),
-    path('<int:context_pk>/', views.documents),
-    path('<int:context_pk>/<int:document_pk>/', views.document),
-    path('<int:context_pk>/<str:document_name>/', views.document_by_name),
-    path('<int:context_pk>/<int:document_pk>/versions/', views.versions),
-    path('<int:context_pk>/<int:document_pk>/<int:version_pk>/', views.version),
+    path('', views.view_context_list),
+    path('<str:context_name>/', views.view_context),
+    path('<str:context_name>/<str:document_name>/', views.view_document),
+    path('<str:context_name>/<str:document_name>/versions/', views.view_version_list),
+    path('<str:context_name>/<str:document_name>/<int:version_pk>/', views.view_version),
 ]
