@@ -111,8 +111,7 @@ th {
 }
 
 .form form {
-    max-width: 50rem;
-    width: 20rem;
+    max-width: 70rem;
     margin-left: auto;
     margin-right: auto;
 }
@@ -125,12 +124,12 @@ th {
     white-space: nowrap;
 }
 
-.form table {
-    width: auto;
-}
-
 .form label {
     padding-right: 1rem;
+}
+
+form .tablewrapper {
+    width: 100%;
 }
 
 input[type=radio] {

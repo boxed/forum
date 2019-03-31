@@ -28,6 +28,7 @@
         var x = document.getElementById("id_text")
         x.focus();
         x.selectionStart =  x.value.length;
-        x.onkeydown = formKeyboardHandler;
+        // TODO: fix this. Used for ctrl+enter I think
+        // x.onkeydown = formKeyboardHandler;
     </script>
 {% endblock %}
