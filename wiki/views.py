@@ -1,4 +1,3 @@
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from tri.table import render_table_to_response
 
@@ -10,6 +9,10 @@ def contexts(request):
         request=request,
         table__data=Context.objects.all().order_by('name'),
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        table__column__name__cell__format=lambda value, row, **_: value if value != 'Private wiki' else f'Private wiki for {row.custom_data}',
+        table__include=['name'],
+        context=dict(title='Wiki contexts'),
+        template='wiki/list.html',
     )
 
 
@@ -18,6 +21,9 @@ def documents(request, context_pk):
         request=request,
         table__data=Document.objects.filter(context__pk=context_pk).order_by('pk'),
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        table__include=['name'],
+        context=dict(title=f'Documents of context {Context.objects.get(pk=context_pk)}'),
+        template='wiki/list.html',
     )
 
 
@@ -38,6 +44,7 @@ def versions(request, context_pk, document_pk):
         request=request,
         table__data=DocumentVersion.objects.filter(document__pk=document_pk),
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        template='wiki/list.html',
     )
 
 

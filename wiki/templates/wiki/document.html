@@ -4,6 +4,10 @@
 
 {% block content %}
 
-    {{ document_version.content|pre|wiki }}
+    <div class="content_text">
+        <h1>{{ document_version.name }}</h1>
+
+        {{ document_version.content|pre|wiki }}
+    </div>
 
 {% endblock %}

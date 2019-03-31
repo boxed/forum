@@ -31,6 +31,21 @@
 
 /* end subscriptions list */
 
+.listview {
+    width: auto;
+}
+
+th {
+    padding-right: 1rem;
+}
+
+.content_text {
+    max-width: 80rem;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: left;
+}
+
 .time {
     white-space: nowrap;
     color: var(--subtle-text);

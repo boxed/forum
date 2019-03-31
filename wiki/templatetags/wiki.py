@@ -5,13 +5,27 @@ from pyparsing import QuotedString
 register = template.Library()
 
 
-def wiki_link_to_anchor_tag(start, lenth, tokens):
-    return f'<a href="../{tokens[0]}/">{tokens[0]}</a>'
+def wiki_link_to_anchor_tag(start, length, tokens):
+    title = tokens[0].replace('"', '&quot;')
+    return f'<a href="../{title}/">{tokens[0]}</a>'
+
+
+def wiki_quote_parse_action(start, length, tokens):
+    return f'<blockquote>{tokens[0]}</blockquote>'
+
+
+def wiki_bold_parse_action(start, length, tokens):
+    return f'<b>{tokens[0]}</b>'
 
 
 urlRef = QuotedString("[", endQuoteChar="]").setParseAction(wiki_link_to_anchor_tag)
 
-wikiMarkup = urlRef
+quote = QuotedString('{quote}', endQuoteChar='{quote}').setParseAction(wiki_quote_parse_action)
+
+bold = QuotedString('**', endQuoteChar='**').setParseAction(wiki_bold_parse_action)
+
+
+wikiMarkup = urlRef | quote | bold
 
 
 def wiki_render(s):
