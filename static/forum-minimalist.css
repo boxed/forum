@@ -184,6 +184,16 @@ input[type=radio] {
     background-color: #A150B9;
 }
 
+/* wiki */
+
+ins {
+    background: var(--unread-bg-color);
+}
+
+del {
+    background-color: red;
+}
+
 
 /* Copied and modified from milligram or normalize */
 .button, button, input[type='button'], input[type='reset'], input[type='submit'] {

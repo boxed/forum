@@ -7,4 +7,5 @@ urlpatterns = [
     path('<str:context_name>/<str:document_name>/', views.view_document),
     path('<str:context_name>/<str:document_name>/versions/', views.view_version_list),
     path('<str:context_name>/<str:document_name>/<int:version_pk>/', views.view_version),
+    path('<str:context_name>/<str:document_name>/<int:version_pk>/<int:version_pk_2>/', views.view_diff),
 ]
