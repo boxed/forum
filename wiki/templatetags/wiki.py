@@ -59,8 +59,9 @@ def literal_parse_action(start, length, tokens):
 
 literal = Literal('\\').setParseAction(nil_parse_action) + Char(printables).setParseAction(literal_parse_action)
 
+divider = Literal('{divider}').setParseAction(lambda start, length, tokens: '<hr>')
 
-wikiMarkup = literal | link | quote | bold | italic | underline
+wikiMarkup = literal | link | quote | bold | italic | underline | divider
 
 
 def wiki_render(s):
