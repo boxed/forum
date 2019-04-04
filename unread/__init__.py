@@ -101,14 +101,18 @@ class SubscriptionData:
 def subscription_data(*, user) -> Dict[str, SubscriptionData]:
     from unread.models import Subscription
 
-    foo = Subscription.objects.filter(user=user).values_list('identifier', 'subscription_type')
+    foo = Subscription.objects.filter(user=user).order_by('identifier').values_list('identifier', 'subscription_type')
     identifiers = [x[0] for x in foo]
     subscription_type_by_identifier = {x[0]: x[1] for x in foo}
     item_time_by_identifier = get_times(identifiers=identifiers)
     user_time_by_identifier = get_user_times(user=user, identifiers=identifiers)
 
+    def split_identifier(identifier):
+        prefix, _, data = identifier.partition(':')
+        return prefix, data
+
     return {
-        identifier: SubscriptionData(
+        split_identifier(identifier): SubscriptionData(
             is_unread=is_unread_(user_time=user_time_by_identifier[identifier], item_time=item_time_by_identifier[identifier]),
             user_time=user_time_by_identifier[identifier],
             item_time=item_time_by_identifier[identifier],

@@ -1,0 +1,9 @@
+<h3>{{ title }}</h3>
+
+{% include "forum/subscription_links.html" with list=active id='active' %}
+
+<ul class="menu">
+    <li><a style="text-align: center; padding-left: 0;" onclick="toggle_passive()" id="toggle_passive"><i class="fas fa-chevron-down"></i></a></li>
+</ul>
+
+{% include "forum/subscription_links.html" with list=passive id='passive' %}

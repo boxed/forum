@@ -2,6 +2,8 @@ import re
 from datetime import datetime
 
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
+from itertools import groupby
+
 from django.db.models import BinaryField
 from django.http import HttpResponseRedirect
 from django.shortcuts import get_object_or_404
@@ -212,40 +214,56 @@ def view_room(request, room_pk):
 def subscriptions(request, template_name='forum/subscriptions.html'):
     subscription_data_by_identifier = subscription_data(user=request.user)
 
-    room_pks = {x.partition(':')[-1] for x in subscription_data_by_identifier.keys()}
+    # TODO: these two dicts should be something you register into
+    object_lookups = {
+        'forum/room': lambda pks: {str(x.pk): x for x in Room.objects.filter(pk__in=pks)},
+    }
 
-    room_by_identifier = {f'forum/room:{room.pk}': room for room in Room.objects.filter(pk__in=room_pks)}
+    title_by_prefix = {
+        'forum/room': 'Rooms',
+    }
 
     has_unread = any(x.is_unread for x in subscription_data_by_identifier.values())
 
-    active = []
-    passive = []
+    result = []
 
-    for identifier, data in subscription_data_by_identifier.items():
-        room = room_by_identifier[identifier]
-        x = dict(
-            url=room.get_absolute_url() + '#first_new',
-            unread=data.is_unread,
-            name=room.name,
-            system_time=data.item_time,
-            user_time=data.user_time,
-            object=room,
-        )
-        if data.subscription_type == SubscriptionTypes.active.name:
-            active.append(x)
-        else:
-            assert data.subscription_type == SubscriptionTypes.passive.name
-            passive.append(x)
+    for prefix, items in groupby(subscription_data_by_identifier.keys(), key=lambda k: k[0]):
+        object_by_suffix = object_lookups[prefix](pks=(x[1] for x in items))
 
-    active = sorted(active, key=lambda x: x['name'].lower())
-    passive = sorted(passive, key=lambda x: x['name'].lower())
+        active = []
+        passive = []
+
+        for identifier, data in subscription_data_by_identifier.items():
+            obj = object_by_suffix[identifier[1]]
+            x = dict(
+                url=obj.get_absolute_url() + '#first_new',
+                unread=data.is_unread,
+                name=obj.name,
+                system_time=data.item_time,
+                user_time=data.user_time,
+                object=obj,
+                identifier=':'.join(identifier),
+            )
+            if data.subscription_type == SubscriptionTypes.active.name:
+                active.append(x)
+            else:
+                assert data.subscription_type == SubscriptionTypes.passive.name
+                passive.append(x)
+
+        active = sorted(active, key=lambda x: x['name'].lower())
+        passive = sorted(passive, key=lambda x: x['name'].lower())
+
+        result.append(dict(
+            title=title_by_prefix[prefix],
+            active=active,
+            passive=passive
+        ))
 
     return render(
         request,
         template_name=template_name,
         context=dict(
-            active=active,
-            passive=passive,
+            result=result,
             has_unread=has_unread,
             is_mobile=request.user_agent.is_mobile,
         )
