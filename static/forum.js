@@ -41,13 +41,13 @@ function update_subscription() {
                 if (!window.parent.document.title.startsWith('* ')) {
                     window.parent.document.title = '* ' + window.parent.document.title;
                 }
-                window.document.getElementById('favicon').setAttribute('href', "static/killing-icon-unread.png");
+                window.document.getElementById('favicon').setAttribute('href', "/static/killing-icon-unread.png");
             }
             else {
                 if (window.parent.document.title.startsWith('* ')) {
                     window.parent.document.title = window.parent.document.title.slice(2);
                 }
-                window.document.getElementById('favicon').setAttribute('href', "static/killing-icon.png");
+                window.document.getElementById('favicon').setAttribute('href', "/static/killing-icon.png");
             }
         }
     }

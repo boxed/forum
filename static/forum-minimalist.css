@@ -22,6 +22,15 @@
     margin: 0;
 }
 
+#subscriptions h2 {
+    font-size: 1.5rem;
+    text-align: left;
+    margin-left: 2rem;
+    margin-bottom: 0;
+    margin-top: 1rem;
+    color: #9b4dca;
+}
+
 .passive li {
     display: none;
 }
@@ -163,6 +172,7 @@ input[type=radio] {
 .menu {
     list-style: none;
     padding: 0;
+    margin: 0.0rem 0;
 }
 
 .menu li a {
