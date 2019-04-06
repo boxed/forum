@@ -5,15 +5,16 @@ from datetime import datetime
 from itertools import groupby
 
 from django.db.models import BinaryField
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.shortcuts import get_object_or_404
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from tri.declarative import dispatch
 from tri.form import register_field_factory, Form, Field, Link, bool_parse
 from tri.form.compat import render
 from tri.form.views import create_or_edit_object
-from tri.table import render_table_to_response, Column
+from tri.table import render_table_to_response, Column, render_table
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int
@@ -107,7 +108,12 @@ def write(request, room_pk, message_pk=None):
     )
 
 
-def view_room(request, room_pk):
+@dispatch(
+    base_template='forum/base.html',
+    room_header_template='forum/room-header.html',
+    room_footer_template='forum/room-footer.html',
+)
+def render_room(request, room_pk, **kwargs):
     # TODO: @dispatch on this view, and params to be able to customize rendering of the room
     room = get_object_or_404(Room, pk=room_pk)
 
@@ -169,7 +175,7 @@ def view_room(request, room_pk):
 
         return data
 
-    result = render_table_to_response(
+    result = render_table(
         request,
         template=get_template('forum/room.html'),
         paginator=RoomPaginator(messages),
@@ -179,6 +185,7 @@ def view_room(request, room_pk):
             time=unread2_time or user_time,
             is_subscribed=is_subscribed(user=request.user, identifier=f'forum/room:{room.pk}'),
             is_mobile=request.user_agent.is_mobile,
+            **kwargs,
         ),
         table__data=messages,
         table__exclude=['path'],
@@ -209,6 +216,10 @@ def view_room(request, room_pk):
 
     set_user_time(user=request.user, identifier=f'forum/room:{room.pk}', time=user_time)
     return result
+
+
+def view_room(request, room_pk):
+    return HttpResponse(render_room(request, room_pk=room_pk))
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):

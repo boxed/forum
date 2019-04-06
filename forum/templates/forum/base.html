@@ -13,12 +13,22 @@
 
 <body{% block body_attributes %}{% endblock %}>
 
+{# note that this contents is duplicated in base_content.html! #}
 {% block before_content %}{% endblock %}
+
+<script>
+    document.body.onscroll = onscroll_show_unread;
+</script>
+
+<div id="fixed-top-unread" style="display: none"></div>
+<div id="fixed-bottom-unread" style="display: none"></div>
+
 
 {% block content %}
 {% endblock %}
 
 {% block after_content %}{% endblock %}
+
 
 </body>
 </html>

@@ -15,7 +15,7 @@ def view_context_list(request):
         table__column__name__cell__format=lambda value, row, **_: value if value != 'Private wiki' else f'Private wiki for {row.custom_data}',
         table__include=['name'],
         context=dict(title='Wiki contexts'),
-        template='wiki/list.html',
+        template='wiki/list.html',   # TODO: Fix when tri.table has base_template
     )
 
 
@@ -26,7 +26,7 @@ def view_context(request, context_name):
         table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
         table__include=['name'],
         context=dict(title=f'Documents of context {Context.objects.get(name__iexact=context_name)}'),
-        template='wiki/list.html',
+        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
     )
 
 
@@ -45,7 +45,7 @@ def view_version_list(request, context_name, document_name):
         table__data=DocumentVersion.objects.filter(document=doc).order_by('version'),
         table__include=['name', 'version', 'changed_time'],
         table__column__version__cell__url=lambda row, **_: row.get_absolute_url(),
-        template='wiki/list.html',
+        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
     )
 
 

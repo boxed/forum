@@ -1,24 +1,14 @@
-{% extends "forum/base.html"  %}
+{% extends base_template  %}
 
 {% block content %}
 
-    <script>
-        document.body.onscroll = onscroll_show_unread;
-    </script>
-
-    <div id="fixed-top-unread"></div>
-
-    {% include "forum/room-header.html" %}
-
-    <div class="fixed-header-padding"></div>
+    {% include room_header_template %}
 
     {% include 'tri_table/list.html' %}
 
     <hr>
 
-    {% include "forum/room-footer.html" %}
-
-    <div id="fixed-bottom-unread"></div>
+    {% include room_footer_template %}
 
     {% if is_mobile %}
         <script>

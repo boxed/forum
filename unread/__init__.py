@@ -80,6 +80,7 @@ def unread_items(*, user):
         for identifier in identifiers
     }
 
+
 class SubscriptionType(Token):
     name = TokenAttribute()
     display_name = TokenAttribute(value=lambda name, **_: name.title())

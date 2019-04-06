@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'forum',
     'unread',
     'wiki',
+    'issues',
     'tri.form',
     'tri.query',
     'tri.table',

@@ -18,7 +18,7 @@
                     <a class="button-ish" href="/rooms/{{ room.pk }}/?&unread_from_here={{ time }}&page={{ page }}#first_new" name="keep_unread" target="_self">Keep unread</a>
                 {% endif %}
 
-                <a class="button button-outline" href="write/?time={{ time }}" name="speak_up" target="_self">New message</a>
+                <a class="button button-outline" href="{{ room.get_absolute_url }}write/?time={{ time }}" name="speak_up" target="_self">New message</a>
 
             </span>
 

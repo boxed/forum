@@ -35,6 +35,7 @@ urlpatterns = [
     path('subscribe/', unread_views.change_subscription),
 
     path('wiki/', include('wiki.urls')),
+    path('issues/', include('issues.urls')),
 
     path('api/0/unread_simple/', unread.views.api_unread_simple),
     path('api/0/unread/', unread.views.api_unread),
