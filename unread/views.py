@@ -43,7 +43,9 @@ def change_subscription(request):
 def api_unread_simple(request):
     data = request.POST if request.method == 'POST' else request.GET
     if not request.user.is_authenticated:
-        request.user = authenticate(request=request, username=data['username'], password=data['password'])
+        u = authenticate(request=request, username=data['username'], password=data['password'])
+        if u:
+            request.user = u
     if request.user.is_authenticated:
         unread = [x for x in unread_items(user=request.user).values() if x]
         if unread:
