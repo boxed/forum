@@ -180,6 +180,7 @@ def render_room(request, room_pk, **kwargs):
         template=get_template('forum/room.html'),
         paginator=RoomPaginator(messages),
         context=dict(
+            obj=room,  # required for header.html
             room=room,
             show_hidden=show_hidden,
             time=unread2_time or user_time,

@@ -24,6 +24,9 @@ class Room(Model):
     def get_absolute_url(self):
         return f'/rooms/{self.pk}/'
 
+    def get_unread_id(self):
+        return f'forum/room:{self.pk}'
+
 
 class BinaryField(models.Field):
     def __init__(self, *args, **kwargs):

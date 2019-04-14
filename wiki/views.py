@@ -32,7 +32,8 @@ def view_context(request, context_name):
 
 def view_document(request, context_name, document_name):
     doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
-    return render(request, 'wiki/document.html', context=dict(document_version=doc.versions.all().order_by('pk')[0]))
+    document_version = doc.versions.all().order_by('pk')[0]
+    return render(request, 'wiki/document.html', context=dict(document_version=document_version))
 
 
 def view_version_list(request, context_name, document_name):
@@ -77,3 +78,9 @@ def view_diff(request, context_name, document_name, version_pk, version_pk_2):
             assert False, f'unknown op code {tag}'
 
     return render(request, 'wiki/diff.html', context=dict(a=doc_a, b=doc_b, diff=mark_safe(diff)))
+
+
+def edit(request, context_name, document_name):
+    doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
+    document_version = doc.versions.all().order_by('pk')[0]
+    return None

@@ -1,0 +1,26 @@
+<div class="fixed-header">
+    <h1>
+        {{ obj.name }}
+    </h1>
+
+    <span id="navigate-back"><a href="/"><i class="fas fa-chevron-left"></i> menu</a></span>
+
+    <span id="header-tools">
+        <nav>
+            <label for="drop" class="toggle"><i class="fas fa-bars"></i></label>
+            <input type="checkbox" id="drop" />
+            <ul class="tools-menu">
+                <li>
+                    <a href="/subscribe/?identifier={{ obj.get_unread_id }}/">
+                        Change subscription
+                    </a>
+                </li>
+
+                {% block menu_items %}{% endblock %}
+            </ul>
+        </nav>
+
+    </span>
+</div>
+
+<div class="fixed-header-padding"></div>

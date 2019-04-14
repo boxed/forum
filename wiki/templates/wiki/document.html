@@ -4,9 +4,9 @@
 
 {% block content %}
 
-    <div class="content_text">
-        <h1>{{ document_version.name }}</h1>
+    {% include "wiki/header.html" with obj=document_version %}
 
+    <div class="content_text">
         {{ document_version.content|pre|wiki }}
     </div>
 

@@ -1,32 +1,11 @@
-<div class="fixed-header">
-    <h1>
-        {{ room.name }}
-    </h1>
+{% extends "forum/header.html" %}
 
-    <span id="navigate-back"><a href="/"><i class="fas fa-chevron-left"></i> menu</a></span>
-
-    <span id="header-tools">
-        <nav>
-            <label for="drop" class="toggle"><i class="fas fa-bars"></i></label>
-            <input type="checkbox" id="drop" />
-            <ul class="tools-menu">
-                <li>
-                    <a href="/subscribe/?identifier=forum/room:{{ room.pk }}/">
-                        Change subscription
-                    </a>
-                </li>
-
-                <li>
-                    {% if not show_hidden %}
-                        <a href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
-                    {% else %}
-                        <a href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&show_hidden=0#first_new" name="hide_deleted" target="_self">Hide deleted</a>
-                    {% endif %}
-                </li>
-            </ul>
-        </nav>
-
-    </span>
-</div>
-
-<div class="fixed-header-padding"></div>
+{% block menu_items %}
+    <li>
+        {% if not show_hidden %}
+            <a href="/rooms/{{ room.pk }}/?&time={{ time  }}&page={{ page }}&show_hidden=1#first_new" name="show_deleted" target="_self">Show deleted</a>
+        {% else %}
+            <a href="/rooms/{{ room.pk }}/?&time={{ time }}&page={{ page }}&show_hidden=0#first_new" name="hide_deleted" target="_self">Hide deleted</a>
+        {% endif %}
+    </li>
+{% endblock %}
