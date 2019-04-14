@@ -2,6 +2,8 @@ from difflib import SequenceMatcher
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
+from tri.form import Field
+from tri.form.views import create_object
 from tri.table import render_table_to_response
 
 from wiki.models import Context, Document, DocumentVersion
@@ -32,7 +34,7 @@ def view_context(request, context_name):
 
 def view_document(request, context_name, document_name):
     doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
-    document_version = doc.versions.all().order_by('pk')[0]
+    document_version = doc.versions.all().order_by('-pk')[0]
     return render(request, 'wiki/document.html', context=dict(document_version=document_version))
 
 
@@ -82,5 +84,33 @@ def view_diff(request, context_name, document_name, version_pk, version_pk_2):
 
 def edit(request, context_name, document_name):
     doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
-    document_version = doc.versions.all().order_by('pk')[0]
-    return None
+    document_version = doc.versions.all().order_by('-pk')[0]
+    # TODO:
+    #   - on save, validate that no one has edited in the meantime
+    return create_object(
+        request=request,
+        model=DocumentVersion,
+        form__exclude=['changed_time'],
+        form__field=dict(
+            document=dict(
+                initial=doc,
+                editable=False,
+                call_target=Field.hidden,
+            ),
+            name__initial=document_version.name,
+            content=dict(
+                initial=document_version.content,
+                call_target=Field.textarea,
+                attrs__style=dict(
+                    height='40rem',
+                    width='50rem',
+                ),
+            ),
+            custom_data__initial=document_version.custom_data,
+            version=dict(
+                initial=document_version.version + 1,
+                editable=False,
+                call_target=Field.hidden,
+            ),
+        ),
+    )
