@@ -110,6 +110,10 @@ DATABASES = {
         'USER': 'root',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': 'set collation_connection=utf8mb4_unicode_ci',
+        },
     }
 }
 
