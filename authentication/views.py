@@ -1,0 +1,57 @@
+from secrets import token_hex
+
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.core.mail import send_mail
+from django.db.models import Q
+from django.http import HttpResponseRedirect
+from django.shortcuts import render
+from django.urls import reverse
+from tri.form import Form, Field
+
+from .models import ResetCode
+
+
+def forgot_password(request):
+    def parse(string_value, **_):
+        try:
+            return User.objects.get(Q(username=string_value) | Q(email=string_value))
+        except User.DoesNotExist:
+            return None
+
+    class ForgotPasswordForm(Form):
+        username_or_email = Field(is_valid=lambda parsed_data, **_: (parsed_data is not None, 'Unknown username or email'), parse=parse)
+
+    form = ForgotPasswordForm(request=request)
+
+    if request.POST and form.is_valid():
+        user = form.fields_by_name.username_or_email.value
+        code = token_hex(64)
+        ResetCode.objects.filter(user=user).delete()
+        ResetCode.objects.create(user=user, code=code)
+
+        send_mail(
+            subject=f'{settings.INSTALLATION_NAME} password reset',
+            message=f"Your reset code is: \n{code}",
+            from_email=settings.NO_REPLY_EMAIL,
+            recipient_list=[user.email],
+        )
+        return HttpResponseRedirect(reverse(reset_password))
+
+    return render(request, template_name='auth/forgot_password.html', context=dict(base_template=settings.BASE_TEMPLATE, form=form))
+
+
+def reset_password(request):
+    class ResetPasswordForm(Form):
+        reset_code = Field()
+        new_password = Field.password()
+        confirm_password = Field.password()
+
+    form = ResetPasswordForm(request=request)
+
+    if request.POST and form.is_valid():
+
+
+        return HttpResponseRedirect('/')
+
+    return render(request, template_name='auth/reset_password.html', context=dict(base_template=settings.BASE_TEMPLATE, form=form))

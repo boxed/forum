@@ -39,6 +39,8 @@ urlpatterns = [
     path('wiki/', include('wiki.urls')),
     path('issues/', include('issues.urls')),
 
+    path('', include('authentication.urls')),
+
     path('api/0/unread_simple/', unread.views.api_unread_simple),
     path('api/0/unread/', unread.views.api_unread),
     path('error_test/', f2views.error_test),

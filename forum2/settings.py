@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'forum',
     'unread',
     'wiki',
+    'authentication',
     'issues',
     'tri.form',
     'tri.query',
@@ -167,6 +168,9 @@ DATETIME_FORMAT = 'Y-m-d H:i:s'
 
 DATE_FORMAT = 'Y-m-d'
 
+INSTALLATION_NAME = 'SKForum'
+NO_REPLY_EMAIL = 'no-reply@killingar.net'
+BASE_TEMPLATE = 'forum/base.html'
 
 try:
     from .settings_local import *
