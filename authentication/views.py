@@ -1,6 +1,7 @@
 from secrets import token_hex
 
 from django.conf import settings
+from django.contrib.auth import login
 from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models import Q
@@ -42,16 +43,24 @@ def forgot_password(request):
 
 
 def reset_password(request):
+    def parse(string_value, **_):
+        try:
+            return ResetCode.objects.get(code=string_value)
+        except User.DoesNotExist:
+            return None
+
     class ResetPasswordForm(Form):
-        reset_code = Field()
+        reset_code = Field(is_valid=lambda parsed_data, **_: (parsed_data is not None, 'Invalid reset password code'), parse=parse)
         new_password = Field.password()
-        confirm_password = Field.password()
+        confirm_password = Field.password(is_valid=lambda parsed_data, **_: (parsed_data == request.GET.get('new_password'), 'Passwords do not match'))
 
     form = ResetPasswordForm(request=request)
 
     if request.POST and form.is_valid():
-
-
+        reset_code = form.fields_by_name.reset_code.value
+        reset_code.user.set_password(form.fields_by_name.new_password.value)
+        login(request, reset_code.user)
+        reset_code.delete()
         return HttpResponseRedirect('/')
 
     return render(request, template_name='auth/reset_password.html', context=dict(base_template=settings.BASE_TEMPLATE, form=form))
