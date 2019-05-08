@@ -13,3 +13,6 @@ class Model(models.Model):
 class ResetCode(Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     code = models.CharField(max_length=1024)
+
+    def __str__(self):
+        return self.code

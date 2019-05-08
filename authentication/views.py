@@ -52,7 +52,7 @@ def reset_password(request):
     class ResetPasswordForm(Form):
         reset_code = Field(is_valid=lambda parsed_data, **_: (parsed_data is not None, 'Invalid reset password code'), parse=parse)
         new_password = Field.password()
-        confirm_password = Field.password(is_valid=lambda parsed_data, **_: (parsed_data == request.GET.get('new_password'), 'Passwords do not match'))
+        confirm_password = Field.password(is_valid=lambda parsed_data, **_: (parsed_data == request.POST.get('new_password'), 'Passwords do not match'))
 
     form = ResetPasswordForm(request=request)
 
