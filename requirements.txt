@@ -1,5 +1,5 @@
 pyparsing
-django
+django==2.0
 tri.table
 tri.token
 termcolor

@@ -108,7 +108,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'forum3',
-        'USER': 'root',
+        'USER': 'johanlu',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'OPTIONS': {
