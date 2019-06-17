@@ -3,7 +3,7 @@ from datetime import datetime
 
 from typing import List, Dict, Any
 
-from tri.token import Token, TokenAttribute, TokenContainer
+from tri_token import Token, TokenAttribute, TokenContainer
 
 DEFAULT_TIME = datetime(2001, 1, 1)
 

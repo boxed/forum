@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from tri.table import render_table_to_response
+from tri_table import render_table_to_response
 
 from forum.views import render_room
 from issues.models import Project, Issue

@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from tri.form import Form, Field
+from tri_form import Form, Field
 
 from forum.views import subscriptions
 

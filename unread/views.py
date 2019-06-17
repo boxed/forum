@@ -4,7 +4,7 @@ from django.contrib.auth import authenticate
 from django.http import HttpResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from tri.form import Form, Field
+from tri_form import Form, Field
 
 from unread import unread_items
 from unread.models import Subscription

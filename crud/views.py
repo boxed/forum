@@ -1,9 +1,9 @@
 from django.shortcuts import get_object_or_404
 from django.urls import path, URLResolver
 from django.urls.resolvers import RegexPattern
-from tri.declarative import dispatch, EMPTY, evaluate
-from tri.form.views import create_object, edit_object
-from tri.table import render_table_to_response, Column, Link
+from tri_declarative import dispatch, EMPTY, evaluate
+from tri_form.views import create_object, edit_object
+from tri_table import render_table_to_response, Column, Link
 
 
 @dispatch(
