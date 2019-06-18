@@ -14,6 +14,7 @@ import os
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 # import jinja2
+from django.template import Template
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -44,9 +45,9 @@ INSTALLED_APPS = [
     'wiki',
     'authentication',
     'issues',
-    'tri.form',
-    'tri.query',
-    'tri.table',
+    'tri_form',
+    'tri_query',
+    'tri_table',
     'django_user_agents',
 ]
 
@@ -108,7 +109,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'forum3',
-        'USER': 'johanlu',
+        'USER': 'root',
         'PASSWORD': '',
         'HOST': '127.0.0.1',
         'OPTIONS': {

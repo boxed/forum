@@ -11,7 +11,7 @@
     {% block extra_head %}{% endblock %}
 </head>
 
-<body{% block body_attributes %}{% endblock %}>
+<body{% block body_attributes %}{{ page.rendered_attrs }}{% endblock %}>
 
 {# note that this contents is duplicated in base_content.html! #}
 {% block before_content %}{% endblock %}
@@ -25,6 +25,7 @@
 
 
 {% block content %}
+    {{ content }}
 {% endblock %}
 
 {% block after_content %}{% endblock %}
