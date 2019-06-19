@@ -7,6 +7,8 @@ from issues.models import (
 )
 from tri_portal import (
     Page,
+    PageContent,
+    HtmlPageContent,
 )
 
 
@@ -53,3 +55,24 @@ def view_issue(request, project_name, issue_name):
         ),
     )
 
+
+# class PropertiesContent(PageContent):
+#     pass
+#
+#
+# class RoomContent(PageContent):
+#     pass
+#
+#
+# def view_issue(request, project_name, issue_name):
+#     project = Project.objects.get(name=project_name)
+#     issue = Issue.objects.get(project=project, name=issue_name)
+#     return Page(
+#         title=issue,
+#         contents=dict(
+#             properties=PropertiesContent(),
+#             separator=HtmlPageContent('<hr>'),
+#             comments=RoomContent(issue.comments),
+#         ),
+#
+#     )
