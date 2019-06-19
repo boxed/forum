@@ -1,5 +1,5 @@
 pyparsing
-django==2.0
+django==2.2
 tri.table
 tri.token
 termcolor
@@ -9,3 +9,4 @@ ua-parser
 user-agents
 django-user-agents
 sentry-sdk==0.7.6
+dataclasses
