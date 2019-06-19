@@ -8,6 +8,7 @@ from django.utils.html import format_html
 from django.utils.text import slugify
 from tri_declarative import Refinable, dispatch, EMPTY, sort_after, with_meta, RefinableObject, Namespace, class_shortcut, should_show
 from tri_form import DISPATCH_PATH_SEPARATOR, Form as BaseForm, render_attrs, render_template, dispatch_prefix_and_remaining_from_key, Link
+from tri_table import Table, render_table
 
 
 def get_dispatch_http_param(request):
@@ -125,6 +126,11 @@ class FormContent(Form, PageContent):
                     return result
 
 
+class TableContent(Table, PageContent):
+    def render2(self, request, **_):
+        return render_table(request, table=self)
+
+
 class InvalidDispatch(Exception):
     pass
 
@@ -202,7 +208,7 @@ class PageBase(RefinableObject):
         return format_html(
             '{}' * len(groups),
             *[
-                format_html(f'<div id="{group.name}">{group.render2(request)}</div>')
+                format_html('<div id="{}">{}</div>', group.name, group.render2(request))
                 for group in groups
             ],
         )
@@ -239,14 +245,25 @@ class PageBase(RefinableObject):
     def form_page(cls, call_target, **kwargs):
         return call_target(**kwargs)
 
+    @classmethod
+    @class_shortcut(
+        contents__table__call_target=TableContent.from_model,
+        attrs__class__table=True,
+    )
+    def table_page(cls, call_target, **kwargs):
+        return call_target(**kwargs)
+
 
 class Page(PageBase):  # the one in forum2
     class Meta:
-        head__template = Template("""    
+        head__template = Template("""  
+        <head>  
+            <title>{{ page.title }}</title>
             <link rel="stylesheet" href="//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic">
             <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.7.2/css/all.css" integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr" crossorigin="anonymous">
             <link rel="stylesheet" href="/static/forum-minimalist.css" >
             <script type="text/JavaScript" src="/static/forum.js"></script>
             <link id="favicon" rel="shortcut icon" type="image/png" href="/static/killing-icon.png" />
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+        </head>
         """)

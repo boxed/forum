@@ -3,6 +3,7 @@ from tri_table import render_table_to_response
 
 from forum.views import render_room
 from issues.models import Project, Issue
+from tri_portal import Page
 
 
 def view_project_list(request):
@@ -45,3 +46,12 @@ def view_issue(request, project_name, issue_name):
             ),
         ),
     )
+
+
+def view_project_list(request):
+    return Page.table_page(
+        title='Projects',
+        contents__table__data=Project.objects.all().order_by('name'),
+        contents__table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        contents__table__include=['name'],
+    ).respond_or_render(request)
