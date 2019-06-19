@@ -3,10 +3,24 @@ from typing import Dict, Callable, Union
 
 from django.http import HttpResponse
 from django.middleware.csrf import get_token
-from django.template import Template
+from django.template import (
+    Template,
+    RequestContext,
+)
 from django.utils.html import format_html
 from django.utils.text import slugify
-from tri_declarative import Refinable, dispatch, EMPTY, sort_after, with_meta, RefinableObject, Namespace, class_shortcut, should_show
+from tri_declarative import (
+    Refinable,
+    dispatch,
+    EMPTY,
+    sort_after,
+    with_meta,
+    RefinableObject,
+    Namespace,
+    class_shortcut,
+    should_show,
+    setdefaults_path,
+)
 from tri_form import DISPATCH_PATH_SEPARATOR, Form as BaseForm, render_attrs, render_template, dispatch_prefix_and_remaining_from_key, Link
 from tri_table import Table, render_table
 
@@ -143,7 +157,7 @@ class Group:
         self.items = [x for x in self.items if should_show(x)]
 
     def render2(self, request):
-        return '\n\n'.join(x.render2(request=request) for x in self.items)
+        return format_html('{}\n\n' * len(self.items), *(x.render2(request=request) for x in self.items))
 
 
 def group_and_sort(items):
@@ -163,11 +177,19 @@ class PageBase(RefinableObject):
     @dispatch(
         title='',
         contents=EMPTY,
+        contents__title__call_target=HtmlPageContent,
+        contents__title__after=-1,
         head__template=Template('<head><title>{{ page.title }}</title></head>'),
         body__template=Template('<body{{ page.rendered_attrs }}>{{ content }}</body>'),
         template=None,
     )
-    def __init__(self, contents, **kwargs):
+    def __init__(self, contents, title, **kwargs):
+        setdefaults_path(
+            contents,
+            title__html=format_html('<h1>{}</h1>', title),
+            title__show=bool(title),
+        )
+
         self.unbound_contents = contents
 
         def bind_content(name, content):
@@ -179,7 +201,7 @@ class PageBase(RefinableObject):
 
         self.contents = {k: bind_content(k, v) for k, v in contents.items()}
 
-        super().__init__(**kwargs)
+        super().__init__(title=title, **kwargs)
 
     def respond(self, request):
         dispatch_http_param = get_dispatch_http_param(request)
@@ -239,7 +261,7 @@ class PageBase(RefinableObject):
     @classmethod
     @class_shortcut(
         contents__form__call_target=FormContent,
-        contents__form__links=[Link.submit(attrs__name=lambda form, **_: form.name)],  # TODO: actions!
+        contents__form__links=[Link.submit(attrs__name=lambda form, **_: form.name)],  # TODO: actions! and move to tri.form
         attrs__class__form=True,
     )
     def form_page(cls, call_target, **kwargs):

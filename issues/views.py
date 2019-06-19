@@ -1,32 +1,38 @@
 from django.shortcuts import render
-from tri_table import render_table_to_response
 
 from forum.views import render_room
-from issues.models import Project, Issue
-from tri_portal import Page
+from issues.models import (
+    Issue,
+    Project,
+)
+from tri_portal import (
+    Page,
+)
 
 
+# TODO: both these views output should have a <div class="content_text"> around them to match the styling in the CSS
 def view_project_list(request):
-    return render_table_to_response(
-        request=request,
-        table__data=Project.objects.all().order_by('name'),
-        table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
-        table__include=['name'],
-        context=dict(title='Projects'),
-        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
-    )
+    return Page.table_page(
+        title='Projects',
+        contents__table=dict(
+            data=Project.objects.all().order_by('name'),
+            column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+            include=['name'],
+        ),
+    ).respond_or_render(request)
 
 
 def view_project(request, project_name):
     project = Project.objects.get(name=project_name)
-    return render_table_to_response(
-        request=request,
-        table__data=Issue.objects.filter(project=project).order_by('pk'),
-        table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
-        table__include=['name'],
-        context=dict(title=f'Issues for {project}'),
-        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
-    )
+
+    return Page.table_page(
+        title=f'Issues for {project}',
+        contents__table=dict(
+            data=Issue.objects.filter(project=project).order_by('pk'),
+            column__name__cell__url=lambda row, **_: row.get_absolute_url(),
+            include=['name'],
+        ),
+    ).respond_or_render(request)
 
 
 def view_issue(request, project_name, issue_name):
@@ -47,11 +53,3 @@ def view_issue(request, project_name, issue_name):
         ),
     )
 
-
-def view_project_list(request):
-    return Page.table_page(
-        title='Projects',
-        contents__table__data=Project.objects.all().order_by('name'),
-        contents__table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
-        contents__table__include=['name'],
-    ).respond_or_render(request)
