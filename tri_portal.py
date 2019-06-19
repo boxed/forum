@@ -2,6 +2,7 @@ from itertools import groupby
 from typing import Dict, Callable, Union
 
 from django.http import HttpResponse
+from django.middleware.csrf import get_token
 from django.template import Template
 from django.utils.html import format_html
 from django.utils.text import slugify
@@ -79,7 +80,7 @@ class FormContent(Form, PageContent):
 
     def render2(self, request, style='table'):
         assert style == 'table'
-        csrf_token = 'TODO!'
+        csrf_token = get_token(request)
         return format_html(
             '<form{}><table{}><input type="hidden" name="csrfmiddlewaretoken" value="{}"/>{}{}{}</table></form>',
             self.rendered_attrs,
