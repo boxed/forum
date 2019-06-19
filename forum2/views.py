@@ -17,6 +17,7 @@ def error_test(request):
 def blank(request):
     return HttpResponse('')
 
+
 def logout(request):
     from django.contrib.auth import logout
     logout(request)
@@ -37,7 +38,7 @@ def login(request):
     from django.contrib.auth import login
 
     if request.user.is_authenticated:
-        return HttpResponse('Already logged in')
+        return HttpResponseRedirect(request.GET.get('next', '/'))
 
     class LoginForm(Form):
         username = Field()
