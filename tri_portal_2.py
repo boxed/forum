@@ -40,20 +40,22 @@ class Content:
 
         if isinstance(children_or_content, Namespace):
             self.children = [
-                Content(name=k, children_or_content=v, **more.get(k, {}))
+                Content(name=k, children_or_content=v, **more.pop(k, {}))
                 for k, v in children_or_content.items()
             ]
-            self.call_target = None
+            self.own_content = None
         else:
             self.children = []
-            self.call_target = children_or_content
+            self.own_content = children_or_content
+
+        assert not more, f"group data contains unknown data: {more}"
 
     def render2(self, request):
         rendered_children = format_html('{}\n\n' * len(self.children), *(x.render2(request=request) for x in self.children))
 
-        if self.call_target:
+        if self.own_content:
             assert not self.children
-            return self.call_target.render2(request=request)
+            return self.own_content.render2(request=request)
 
         if self.tag:
             return format_html('<{}{}>{}</{}>', self.tag, render_attrs(self.attrs), rendered_children, self.tag)
