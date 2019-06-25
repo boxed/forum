@@ -142,7 +142,16 @@ class FormContent(Form, PageContent):
 
 class TableContent(Table, PageContent):
     def render2(self, request, **_):
+        # {{ table.render_filter }}
+        #
+        # <div class="table-container">
+        #     {% include "tri_table/table_container.html" %}
+        # </div>
+
         return render_table(request, table=self)
+
+    def respond(self, request):
+        pass
 
 
 class InvalidDispatch(Exception):
@@ -157,7 +166,10 @@ class Group:
         self.items = [x for x in self.items if should_show(x)]
 
     def render2(self, request):
-        return format_html('{}\n\n' * len(self.items), *(x.render2(request=request) for x in self.items))
+        contents = format_html('{}\n\n' * len(self.items), *(x.render2(request=request) for x in self.items))
+        if self.name:
+            return format_html('<div class="{}">{}</div>', self.name, contents)
+        return contents
 
 
 def group_and_sort(items):
@@ -289,3 +301,32 @@ class Page(PageBase):  # the one in forum2
             <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
         </head>
         """)
+
+
+def test_html_creation():
+    @dispatch(
+        item=EMPTY,
+        group=EMPTY,
+    )
+    def assemble(item, group):
+        return ''.join(x.render2() for x in item.values())
+
+    items = dict(
+        item__foo=HtmlPageContent(html='foo'),
+        item__bar=HtmlPageContent(html='bar'),
+        item__baz=HtmlPageContent(html='baz'),
+    )
+
+    assert assemble(**items) == 'foobarbaz'
+    assert assemble(
+        **items,
+        item__foo__group='a__b',
+        item__bar__group='a__b',
+    ) == '<div class="a"><div class="b">foobar</div>baz</div>'
+    assert assemble(
+        **items,
+        item__foo__group='a__b',
+        item__bar__group='a__b',
+        group__a__attrs__class__a=False,
+        group__a__attrs__class_foo=True,
+    ) == '<div class="a"><div class="b">foobar</div>baz</div>'
