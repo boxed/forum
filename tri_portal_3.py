@@ -7,7 +7,7 @@ from tri_declarative import (
     refinable,
     RefinableObject,
     Namespace,
-)
+    Refinable)
 from tri_form import render_attrs
 from tri_struct import Struct
 
@@ -17,22 +17,31 @@ django.setup()
 
 
 class BoundContent(RefinableObject):
+    post_process = Refinable()
+
     @dispatch(
         children=EMPTY,
+        post_process=EMPTY,
     )
     def __init__(self, *, name=None, tag=None, no_end_tag=False, attrs=None, children, content=None, **kwargs):
         self.name = name
         self.attrs = attrs
         self.tag = tag
         self.no_end_tag = no_end_tag
-        self.children = {}
+        self.children = children
         self.content = content or ''
-        for k, v in children.items():
+
+        super(BoundContent, self).__init__(**kwargs)
+
+        for k, v in self.post_process.items():
+            assert hasattr(self, k), f"{k} is not something we can post process"
+            setattr(self, k, v(content=self, **{k: getattr(self, k)}))
+
+        # bind
+        for k, v in self.children.items():
             if isinstance(v, dict):
                 v = bind(**v, name=k)
             self.children[k] = v
-
-        super(BoundContent, self).__init__(**kwargs)
 
     @staticmethod
     @refinable
@@ -167,8 +176,6 @@ foo = dict(
 )
 
 actual = bind(**foo).render2(request).strip()
-
-print(actual)
 
 expected = """<head>
 <title>~~title~~</title>
