@@ -78,7 +78,7 @@ class BoundContent(RefinableObject):
                     render_attrs(bound_content.attrs),
                 )
         else:
-            return bound_content.content + rendered_children
+            return format_html('{}{}', bound_content.content, rendered_children)
 
     def render2(self, request):
         return self.render(bound_content=self, request=request)

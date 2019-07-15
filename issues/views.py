@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 
 from forum.views import render_room
@@ -7,12 +8,13 @@ from issues.models import (
 )
 from tri_portal import (
     Page,
-    PageContent,
-    HtmlPageContent,
 )
 
 
 # TODO: both these views output should have a <div class="content_text"> around them to match the styling in the CSS
+from tri_portal_3 import bind
+
+
 def view_project_list(request):
     return Page.table_page(
         title='Projects',
@@ -64,15 +66,34 @@ def view_issue(request, project_name, issue_name):
 #     pass
 #
 #
-# def view_issue(request, project_name, issue_name):
-#     project = Project.objects.get(name=project_name)
-#     issue = Issue.objects.get(project=project, name=issue_name)
-#     return Page(
-#         title=issue,
-#         contents=dict(
-#             properties=PropertiesContent(),
-#             separator=HtmlPageContent('<hr>'),
-#             comments=RoomContent(issue.comments),
-#         ),
-#
-#     )
+def view_issue(request, project_name, issue_name):
+    project = Project.objects.get(name=project_name)
+    issue = Issue.objects.get(project=project, name=issue_name)
+
+    def properties(x):
+        return {
+            p.name: dict(
+                tag='div',
+                attrs__class__property=True,
+                children=dict(
+                    label=dict(tag='label', content=p.name),
+                    content=dict(tag='span', content=p.data),
+                )
+            )
+            for p in x.all()
+        }
+
+    return HttpResponse(bind(
+        children=dict(
+            title=dict(tag='h1', content=issue),
+
+            user_properties__children=properties(issue.user_properties),
+            text_properties__children=properties(issue.text_properties),
+            long_text_properties__children=properties(issue.long_text_properties),
+
+            separator=dict(tag='hr'),
+
+            # comments=room(issue.comments),
+        ),
+
+    ).render2(request))  # TODO: this should be render_or_respond() but we haven't implemented this in the new fancy code
