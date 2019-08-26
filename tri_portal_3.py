@@ -7,6 +7,7 @@ from tri_declarative import (
     refinable,
     RefinableObject,
     Namespace,
+    evaluate_recursive,
 )
 from tri_form import render_attrs
 from tri_struct import Struct
@@ -16,20 +17,37 @@ import django
 django.setup()
 
 
+def evaluate_if_applicable(x, evaluate_with):
+    # TODO: move this optimization into evaluate_recursive/evaluate? we require to match one param after all...
+    if evaluate_with:
+        return evaluate_recursive(x, **evaluate_with)
+    else:
+        return x
+
+
 class BoundContent(RefinableObject):
     @dispatch(
         children=EMPTY,
+        evaluate_with=EMPTY,
     )
-    def __init__(self, *, name=None, tag=None, end_tag=True, attrs=None, children, content=None, **kwargs):
-        self.name = name
-        self.attrs = attrs
-        self.tag = tag
-        self.end_tag = end_tag
+    def __init__(self, *, name=None, tag=None, end_tag=True, attrs=None, children, evaluate_with, show=True, content=None, **kwargs):
+        self.name = evaluate_if_applicable(name, evaluate_with)
+        self.attrs = evaluate_if_applicable(attrs, evaluate_with)
+        self.tag = evaluate_if_applicable(tag, evaluate_with)
+        self.end_tag = evaluate_if_applicable(end_tag, evaluate_with)
+        self.content = evaluate_if_applicable(content or '', evaluate_with)
+        self.show = evaluate_if_applicable(show, evaluate_with)
+
+        # self.evaluate_with = evaluate_with
+
         self.children = {}
-        self.content = content or ''
-        for k, v in children.items():
+        for k, v in evaluate_if_applicable(children, evaluate_with).items():
             if isinstance(v, dict):
-                v = bind(**v, name=k)
+                v = bind(**v, name=k, evaluate_with=evaluate_with)
+                if not v.show:
+                    continue
+            else:
+                v = evaluate_if_applicable(v, evaluate_with=evaluate_with)
             self.children[k] = v
 
         super(BoundContent, self).__init__(**kwargs)
@@ -62,7 +80,8 @@ class BoundContent(RefinableObject):
                     bound_content.tag,
                 )
             else:
-                assert not bound_content.content and not rendered_children
+                assert not bound_content.content, bound_content
+                assert not rendered_children, "Having rendered children but not having a close tag doesn't make sense!"
                 return format_html(
                     '<{}{}>',
                     bound_content.tag,

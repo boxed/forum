@@ -3,52 +3,67 @@ from tri_declarative import (
     dispatch,
     Shortcut,
 )
+from tri_form import (
+    Field,
+    Form,
+)
 from tri_struct import Struct
 
-from tri_portal_3 import bind
+from tri_portal_3 import (
+    bind,
+    BoundContent,
+)
 
 container__attrs__class={'t-input': True},
 label_container__tag=None,
 
 Content = Namespace
 
-
-
 label = Shortcut(
     tag='label',
     attrs__for=lambda field, **_: field.id,
-    children__text=lambda field, **_: field.display_name,
+    content=lambda field, **_: field.display_name,
 )
 
 request = Struct()
 
-field = Namespace(id='foo', display_name='display_name')
-assert bind(**Content(tag='div', children=dict(label=label))).render2(request) == '''<div>
-<link for="foo">
-display_name
-</link>
+
+class MyForm(Form):
+    foo = Field()
+
+
+form = MyForm()
+
+field = form.fields_by_name.foo
+
+actual = bind(**Content(tag='div', children=dict(label=label), evaluate_with=dict(field=field))).render2(request).strip()
+
+expected = '''<div>
+<label for="id_foo">Foo</label>
 </div>'''
-exit(1)
+
+assert expected == actual, actual
 
 
-@dispatch(
+input = Shortcut(
     tag='input',
-    no_end_tag=True,
+    end_tag=False,
+    attrs=dict(
+        type=lambda field, **_: field.input_type,
+        value=lambda field, **_: field.rendered_value,
+        name=lambda field, **_: field.name,
+        id=lambda field, **_: field.id,
+    ),
 )
-def input(field, **kwargs):
-    return Namespace(
-        attrs=dict(
-            type=field.input_type,
-            value=field.rendered_value,  # TODO: but late evaluated right?
-            name=field.name,
-            id=field.id,
-        ),
-        children=dict(
-            text=field.display_name,
-        ),
-        **kwargs
-    )
 
+assert bind(**input, evaluate_with=dict(field=field)).render2(request) == '<input id="id_foo" name="foo" type="text" value="">'
+
+
+errors = Shortcut(
+    show=lambda field, **_: field.errors,
+    tag='ul',
+    children=lambda field, **_: {error: BoundContent(tag='li', content=error) for error in field.errors},
+)
 
 # base definition, See compact_form_row.html in tri.form
 container = Content(
@@ -56,17 +71,45 @@ container = Content(
     children=dict(
         label_container=Content(
             tag='div',
-            children=dict(label=label(field)),
+            children=dict(label=label),
         ),
         input_container=Content(
             tag='span',
             children=dict(
-                input=input(field)
+                input=input
             )
         ),
-        errors=Content(...),
+        errors=errors
     )
 )
+
+actual = bind(**container, evaluate_with=dict(field=field)).render2(request)
+
+assert actual == '''<div>
+<div>
+<label for="id_foo">Foo</label>
+</div>
+<span>
+<input id="id_foo" name="foo" type="text" value="">
+</span>
+</div>'''
+
+
+field.errors.add('asd!')
+
+actual = bind(**container, evaluate_with=dict(field=field)).render2(request)
+
+assert actual == '''<div>
+<div>
+<label for="id_foo">Foo</label>
+</div>
+<span>
+<input id="id_foo" name="foo" type="text">
+</span>
+<ul>
+<li>asd!</li>
+</ul>
+</div>''', actual
 
 # # triDS override. See compact_form_row.html in triresolve
 # container.post_process_children=lambda children, content, **_: Content(
