@@ -146,7 +146,11 @@ foo = dict(
             content='~~title~~',
         ),
         font=stylesheet('//fonts.googleapis.com/css?family=Roboto:300,300italic,700,700italic'),
-        fontawesome=stylesheet("https://use.fontawesome.com/releases/v5.7.2/css/all.css", attrs__integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr", attrs__crossorigin="anonymous"),
+        fontawesome=stylesheet(
+            "https://use.fontawesome.com/releases/v5.7.2/css/all.css",
+            attrs__integrity="sha384-fnmOCqbTlWIlj8LyTjo7mOUStjsKC4pOpQbqyi7RrhN7udi9RwhKkMHpvLbHG9Sr",
+            attrs__crossorigin="anonymous"
+        ),
         css=stylesheet("/static/forum-minimalist.css"),
         js=dict(
             tag='script',

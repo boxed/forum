@@ -27,3 +27,10 @@ container.post_process_children=lambda children, content, **_: Content(
         )
     )
 )
+
+
+## This is another idea for how to restructure:
+# structure=[
+#     'label',
+#     ['input', 'errors']
+# ]
