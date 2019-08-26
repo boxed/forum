@@ -20,11 +20,11 @@ class BoundContent(RefinableObject):
     @dispatch(
         children=EMPTY,
     )
-    def __init__(self, *, name=None, tag=None, no_end_tag=False, attrs=None, children, content=None, **kwargs):
+    def __init__(self, *, name=None, tag=None, end_tag=True, attrs=None, children, content=None, **kwargs):
         self.name = name
         self.attrs = attrs
         self.tag = tag
-        self.no_end_tag = no_end_tag
+        self.end_tag = end_tag
         self.children = {}
         self.content = content or ''
         for k, v in children.items():
@@ -51,7 +51,7 @@ class BoundContent(RefinableObject):
         rendered_children = bound_content.render_children(bound_content=bound_content, request=request)
 
         if bound_content.tag:
-            if not bound_content.no_end_tag:
+            if bound_content.end_tag:
                 return format_html(
                     '<{}{}>{}{}{}</{}>',
                     bound_content.tag,
@@ -128,7 +128,7 @@ actual = bind(render=lambda bound_content, request: 'foo').render2(request) == '
 @dispatch(
     attrs__rel='stylesheet',
     tag='link',
-    no_end_tag=True,
+    end_tag=False,
 )
 def stylesheet(href, **kwargs):
     return Namespace(
@@ -159,12 +159,12 @@ foo = dict(
         ),
         favicon=dict(
             tag='link',
-            no_end_tag=True,
+            end_tag=False,
             attrs=dict(id="favicon", rel="shortcut icon", type="image/png", href="/static/killing-icon.png")
         ),
         viewport=dict(
             tag='meta',
-            no_end_tag=True,
+            end_tag=False,
             attrs=dict(name="viewport", content="width=device-width, initial-scale=1, maximum-scale=1"),
         )
     ),
@@ -172,7 +172,7 @@ foo = dict(
 
 actual = bind(**foo).render2(request).strip()
 
-print(actual)
+# print(actual)
 
 expected = """<head>
 <title>~~title~~</title>
