@@ -95,6 +95,24 @@ assert actual == '''<div>
 </div>'''
 
 
+# triDS override. See compact_form_row.html in triresolve
+actual = bind(**container, post_process_children=lambda children, bound_content, **_: Content(
+    tag=bound_content.tag,
+    attrs=bound_content.attrs,
+    children=dict(
+        label=children.label_container.children.label,
+        input_container=Content(
+            children=dict(
+                input=children.input_container.children.input,
+                errors=children.errors,
+            )
+        )
+    )
+)).render2(request)
+
+
+
+# Test rendering with an error
 field.errors.add('asd!')
 
 actual = bind(**container, evaluate_with=dict(field=field)).render2(request)
@@ -111,24 +129,28 @@ assert actual == '''<div>
 </ul>
 </div>''', actual
 
-# # triDS override. See compact_form_row.html in triresolve
-# container.post_process_children=lambda children, content, **_: Content(
-#     tag=content.tag,
-#     attrs=content.attrs,
-#     children=dict(
-#         label=children.label,
-#         input_container=Content(
-#             children=dict(
-#                 input=children.input,
-#                 errors=children.errors,
-#             )
-#         )
-#     )
-# )
+
+# This is another idea for how to restructure:
+
+# structure = '''
+# div container
+#     div label_container
+#         label
+#     span input_container
+#         input
+#     errors
+# '''
 #
-#
-# ## This is another idea for how to restructure:
-# # structure=[
-# #     'label',
-# #     ['input', 'errors']
-# # ]
+# override_structure = '''
+# div container
+#     label
+#     div input_container
+#         input
+#         errors
+# '''
+
+
+# structure=[
+#     'label',
+#     ['input', 'errors']
+# ]

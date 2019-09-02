@@ -30,7 +30,7 @@ class BoundContent(RefinableObject):
         children=EMPTY,
         evaluate_with=EMPTY,
     )
-    def __init__(self, *, name=None, tag=None, end_tag=True, attrs=None, children, evaluate_with, show=True, content=None, **kwargs):
+    def __init__(self, *, name=None, tag=None, end_tag=True, attrs=None, children, evaluate_with, show=True, content=None, post_process_children=None, **kwargs):
         self.name = evaluate_if_applicable(name, evaluate_with)
         self.attrs = evaluate_if_applicable(attrs, evaluate_with)
         self.tag = evaluate_if_applicable(tag, evaluate_with)
@@ -40,7 +40,7 @@ class BoundContent(RefinableObject):
 
         # self.evaluate_with = evaluate_with
 
-        self.children = {}
+        self.children = Struct()
         for k, v in evaluate_if_applicable(children, evaluate_with).items():
             if isinstance(v, dict):
                 v = bind(**v, name=k, evaluate_with=evaluate_with)
@@ -49,6 +49,9 @@ class BoundContent(RefinableObject):
             else:
                 v = evaluate_if_applicable(v, evaluate_with=evaluate_with)
             self.children[k] = v
+
+        if post_process_children is not None:
+            self.children = post_process_children(children=self.children, bound_content=self)
 
         super(BoundContent, self).__init__(**kwargs)
 
