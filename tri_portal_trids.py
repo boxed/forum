@@ -132,22 +132,42 @@ assert actual == '''<div>
 
 # This is another idea for how to restructure:
 
-# structure = '''
-# div container
-#     div label_container
-#         label
-#     span input_container
-#         input
-#     errors
-# '''
-#
-# override_structure = '''
-# div container
-#     label
-#     div input_container
-#         input
-#         errors
-# '''
+structure = '''
+container
+    label_container
+        label
+    input_container
+        input
+    errors
+'''
+
+
+structure_template = """
+{{ container.start }}
+    {{ label_container.start }}
+        {{ label }}
+    {{ label_container.end }}
+    {{ input_container.start }}
+        {{ input }}
+    {{ input_container.end }}
+    {{ errors }}
+{{ container.end }}
+"""
+
+container__tag = 'div'
+label_container__tag = 'div'
+input_container__tag = 'span'
+
+
+override_structure = '''
+container
+    label
+    input_container
+        input
+        errors
+'''
+
+input_container__tag = 'div'
 
 
 # structure=[
