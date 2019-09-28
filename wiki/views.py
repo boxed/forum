@@ -2,9 +2,9 @@ from difflib import SequenceMatcher
 
 from django.shortcuts import render
 from django.utils.safestring import mark_safe
-from tri.form import Field
-from tri.form.views import create_object
-from tri.table import render_table_to_response
+from tri_form import Field
+from tri_form.views import create_object
+from tri_table import render_table_to_response
 
 from wiki.models import Context, Document, DocumentVersion
 

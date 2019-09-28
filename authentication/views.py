@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from tri.form import Form, Field
+from tri_form import Form, Field
 
 from .models import ResetCode
 

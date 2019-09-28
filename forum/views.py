@@ -10,11 +10,11 @@ from django.shortcuts import get_object_or_404
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
-from tri.declarative import dispatch
-from tri.form import register_field_factory, Form, Field, Link, bool_parse
-from tri.form.compat import render
-from tri.form.views import create_or_edit_object
-from tri.table import render_table_to_response, Column, render_table
+from tri_declarative import dispatch
+from tri_form import register_field_factory, Form, Field, Link, bool_parse
+from tri_form.compat import render
+from tri_form.views import create_or_edit_object
+from tri_table import render_table_to_response, Column, render_table
 
 from forum import RoomPaginator, PAGE_SIZE
 from forum.models import Room, Message, User, bytes_from_int

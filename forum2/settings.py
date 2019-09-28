@@ -44,9 +44,9 @@ INSTALLED_APPS = [
     'wiki',
     'authentication',
     'issues',
-    'tri.form',
-    'tri.query',
-    'tri.table',
+    'tri_form',
+    'tri_query',
+    'tri_table',
     'django_user_agents',
 ]
 
