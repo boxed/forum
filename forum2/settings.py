@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'tri_query',
     'tri_table',
     'django_user_agents',
+    'iommi',
 ]
 
 MIDDLEWARE = [
@@ -63,6 +64,7 @@ MIDDLEWARE = [
     'forum2.ProfileMiddleware',
     'forum2.LoggingMiddleware',
     'forum2.login_middleware',
+    'iommi.middleware',
 ]
 
 ROOT_URLCONF = 'forum2.urls'

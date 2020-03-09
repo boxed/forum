@@ -14,6 +14,8 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.urls import path, include, re_path
+from iommi.admin import Admin
+
 import forum.views as views
 import forum2.views
 import forum2.views as f2views
@@ -48,4 +50,6 @@ urlpatterns = [
 
     re_path('issues2/issues/(?P<rest_path>.*)', crud(Issue)),
     re_path('issues2/projects/(?P<rest_path>.*)', crud(Project)),
+
+    path('iommi-admin/', include(Admin.urls())),
 ]
