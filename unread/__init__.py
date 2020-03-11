@@ -110,6 +110,7 @@ def subscription_data(*, user) -> Dict[str, SubscriptionData]:
 
     def split_identifier(identifier):
         prefix, _, data = identifier.partition(':')
+        assert not data.endswith('/')
         return prefix, data
 
     return {

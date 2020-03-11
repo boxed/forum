@@ -175,7 +175,8 @@ DATE_FORMAT = 'Y-m-d'
 
 INSTALLATION_NAME = 'SKForum'
 NO_REPLY_EMAIL = 'no-reply@killingar.net'
-BASE_TEMPLATE = 'forum/base.html'
+
+IOMMI_DEFAULT_STYLE = 'forum'
 
 try:
     from .settings_local import *

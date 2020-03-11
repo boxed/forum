@@ -1,34 +1,62 @@
 import re
 from datetime import datetime
-
 # from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
 from itertools import groupby
 
-from django.db.models import BinaryField
-from django.http import HttpResponseRedirect, HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponseRedirect
+from django.shortcuts import (
+    get_object_or_404,
+    render,
+)
 from django.template import Template
 from django.template.loader import get_template
 from django.utils.safestring import mark_safe
+from iommi import (
+    Column,
+    Form,
+    Fragment,
+    Page,
+    Table,
+    style,
+)
+from iommi.form import bool_parse
+from iommi.style import (
+    Style,
+    register_style,
+)
 from tri_declarative import dispatch
-from tri_form import register_field_factory, Form, Field, Link, bool_parse
-from tri_form.compat import render
-from tri_form.views import create_or_edit_object
-from tri_table import render_table_to_response, Column, render_table
 
-from forum import RoomPaginator, PAGE_SIZE
-from forum.models import Room, Message, User, bytes_from_int
-from unread import set_time, get_user_time, set_user_time, is_subscribed, subscription_data
+from forum.models import (
+    bytes_from_int,
+    Message,
+    Room,
+    User,
+)
+from unread import (
+    get_user_time,
+    is_subscribed,
+    set_time,
+    set_user_time,
+    subscription_data,
+)
 from unread.models import SubscriptionTypes
 
-register_field_factory(BinaryField, lambda **_: None)
+register_style(
+    'forum',
+    Style(
+        style.base,
+        Form__attrs__class__form=True,
+    )
+)
 
-
-Form.Meta.base_template = 'forum/base.html'
+PAGE_SIZE = 10
 
 
 def rooms(request):
-    return render_table_to_response(request, table__model=Room)
+    return Table(
+        auto__model=Room,
+        columns__name__cell__url=lambda row, **_: row.get_absolute_url(),
+    )
 
 
 def pre_format(s):
@@ -58,7 +86,7 @@ def write(request, room_pk, message_pk=None):
 
     def non_editable_single_choice(model, pk):
         return dict(
-            container__attrs__style__display='none',
+            attrs__style__display='none',
             editable=False,
             choices=model.objects.filter(pk=pk) if pk is not None else model.objects.none(),
             initial=model.objects.get(pk=pk) if pk is not None else None,
@@ -80,38 +108,65 @@ def write(request, room_pk, message_pk=None):
         set_time(identifier=f'forum/room:{room.pk}', time=instance.last_changed_time)
 
     # noinspection PyShadowingNames
-    def redirect(request, redirect_to, form):
-        del form
-        del redirect_to
+    def redirect(redirect_to, **_):
         return HttpResponseRedirect(room.get_absolute_url() + f'?time={request.GET["time"]}#first_new')
 
-    return create_or_edit_object(
-        request=request,
-        model=Message,
-        instance=message,
-        is_create=message is None,
-        on_save=on_save,
-        form__field=dict(
-            text=Field.textarea,
-            text__label_template='forum/blank.html',
-            parent=non_editable_single_choice(Message, parent_pk),
-            room=non_editable_single_choice(Room, room_pk),
-            user=non_editable_single_choice(User, request.user.pk),
-        ),
-        form__links=[Link.submit()],
-        redirect=redirect,
-        render=render,
-        form__include=['text', 'parent', 'room', 'user'],
-        render__context__room=room,
-        render__context__parent=parent,
-        template_name='forum/write.html',
-    )
+    if message_pk:
+        form = Form.edit
+    else:
+        form = Form.create
+
+    class WritePage(Page):
+        header = Fragment(template=Template("""
+            <h1>{{ room }}</h1>
+        
+            <hr>
+        
+            {% if parent %}
+                <table class="listview roomtable">
+                    {% include "forum/message.html" with row=parent %}
+                </table>
+        
+                <hr>
+            {% endif %}
+        """))
+
+        create = form(
+            title=None,
+            auto__include=['text', 'parent', 'room', 'user'],
+            auto__model=Message,
+            auto__instance=message,
+            fields=dict(
+                text__label__template='forum/blank.html',
+                parent=non_editable_single_choice(Message, parent_pk),
+                room=non_editable_single_choice(Room, room_pk),
+                user=non_editable_single_choice(User, request.user.pk),
+            ),
+            extra__on_save=on_save,
+            extra__is_create=message is None,
+            extra__redirect=redirect,
+            extra__room=room,
+            extra__parent=parent,
+        )
+
+        script = mark_safe("""
+        <script>
+            var x = document.getElementById("id_text")
+            x.focus();
+            x.selectionStart =  x.value.length;
+            // TODO: fix this. Used for ctrl+enter I think
+            // x.onkeydown = formKeyboardHandler;
+        </script>
+        """)
+
+        def own_evaluate_parameters(self):
+            return dict(page=self, room=room, parent=parent, time=request.GET["time"])
+
+    return WritePage()
 
 
 @dispatch(
-    base_template='forum/base.html',
     room_header_template='forum/room-header.html',
-    room_footer_template='forum/room-footer.html',
 )
 def render_room(request, room_pk, **kwargs):
     # TODO: @dispatch on this view, and params to be able to customize rendering of the room
@@ -134,16 +189,18 @@ def render_room(request, room_pk, **kwargs):
     if 'unread_from_here' in request.GET:
         user_time = datetime.fromisoformat(request.GET['unread_from_here'])
 
+    if user_time < unread2_time:
+        unread2_time = user_time
+
     # TODO: show many pages at once if unread? Right now we show the first unread page.
-    start_page = None
-    if 'page' not in request.GET:
+    def get_start_page(paginator, **_):
         # Find first unread page
         try:
             first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=user_time).order_by('path')[0]
-            messages_before_first_unread = room.message_set.filter(path__lt=first_unread_message.path).count()
-            start_page = messages_before_first_unread // PAGE_SIZE
+            messages_before_first_unread = room.messages.filter(path__lt=first_unread_message.path).count()
+            return messages_before_first_unread // PAGE_SIZE + 1
         except IndexError:
-            pass
+            return paginator.number_of_pages
 
     messages = Message.objects.filter(room__pk=room_pk).prefetch_related('user', 'room')
     if not show_hidden:
@@ -155,10 +212,10 @@ def render_room(request, room_pk, **kwargs):
     def is_unread2(row, **_):
         return row.last_changed_time >= unread2_time and not is_unread(row=row)
 
-    def preprocess_data(data, table, **_):
-        data = list(data)
+    def preprocess_rows(rows, table, **_):
+        rows = list(rows)
         first_new = None
-        for d in data:
+        for d in rows:
             if is_unread(row=d):
                 first_new = d
                 break
@@ -166,52 +223,61 @@ def render_room(request, room_pk, **kwargs):
         table.extra.unread = first_new is not None
 
         first_new_or_last_message = first_new
-        if first_new_or_last_message is None and data:
-            first_new_or_last_message = data[-1]
+        if first_new_or_last_message is None and rows:
+            first_new_or_last_message = rows[-1]
 
         if first_new_or_last_message is not None:
             # This is used by the view
             first_new_or_last_message.first_new = True
 
-        return data
+        return rows
 
-    result = render_table(
-        request,
-        template=get_template('forum/room.html'),
-        paginator=RoomPaginator(messages),
-        context=dict(
-            obj=room,  # required for header.html
-            room=room,
-            show_hidden=show_hidden,
-            time=unread2_time or user_time,
-            is_subscribed=is_subscribed(user=request.user, identifier=f'forum/room:{room.pk}'),
-            is_mobile=request.user_agent.is_mobile,
-            **kwargs,
-        ),
-        table__data=messages,
-        table__exclude=['path'],
-        table__extra_fields=[
-            Column(name='unread_from_here_href', attr=None, cell__value=unread_from_here_href),
-        ],
-        table__preprocess_data=preprocess_data,
-        table__header__template=Template(''),
-        table__row__template=get_template('forum/message.html'),
-        table__row__attrs=dict(
-            class__indent_0=lambda row, **_: row.indent == 0,
-            class__message=True,
-            class__current_user=lambda row, **_: request.user == row.user,
-            class__other_user=lambda row, **_: request.user != row.user,
-            class__unread=is_unread,
-            class__unread2=is_unread2,
-        ),
-        table__attrs__cellpadding='0',
-        table__attrs__cellspacing='0',
-        table__attrs__id='first_newtable',
-        table__attrs__align='center',
-        table__attrs__class__roomtable=True,
-        table__paginator__template='forum/blank.html',
-        page=start_page,
-    )
+    class RoomPage(Page):
+
+        table = Table(
+            template='forum/room.html',
+            title=None,
+            auto__rows=messages,
+            auto__exclude=['path'],
+            columns__unread_from_here_href=Column(attr=None, cell__value=unread_from_here_href),
+            preprocess_rows=preprocess_rows,
+            header__template=Template(''),
+            row__template=get_template('forum/message.html'),
+            row__attrs__class=dict(
+                indent_0=lambda row, **_: row.indent == 0,
+                message=True,
+                current_user=lambda row, **_: request.user == row.user,
+                other_user=lambda row, **_: request.user != row.user,
+                unread=is_unread,
+                unread2=is_unread2,
+            ),
+            attrs=dict(
+                cellpadding='0',
+                cellspacing='0',
+                id='first_newtable',
+                align='center',
+                class__roomtable=True,
+            ),
+            paginator=dict(
+                min_page_size=10,
+                template='forum/room-footer.html',
+                page=get_start_page,
+            ),
+            page_size=PAGE_SIZE,
+        )
+
+        def own_evaluate_parameters(self):
+            return dict(
+                page=self,
+                room=room,
+                show_hidden=show_hidden,
+                time=unread2_time or user_time,
+                is_subscribed=is_subscribed(user=request.user, identifier=f'forum/room:{room.pk}'),
+                is_mobile=request.user_agent.is_mobile,
+                **kwargs,
+            )
+
+    result = RoomPage().bind(request=request).render_to_response()
     if 'unread_from_here' not in request.GET:
         user_time = datetime.now()
 
@@ -220,7 +286,7 @@ def render_room(request, room_pk, **kwargs):
 
 
 def view_room(request, room_pk):
-    return HttpResponse(render_room(request, room_pk=room_pk))
+    return render_room(request, room_pk=room_pk)
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):

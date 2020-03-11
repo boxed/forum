@@ -1,14 +1,11 @@
-{% extends base_template  %}
 
 {% block content %}
 
     {% include room_header_template %}
 
-    {% include 'tri_table/list.html' %}
+    {% include 'iommi/table/table.html' %}
 
     <hr>
-
-    {% include room_footer_template %}
 
     {% if is_mobile %}
         <script>

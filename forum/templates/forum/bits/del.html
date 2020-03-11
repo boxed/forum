@@ -1,6 +1,6 @@
 {% if row.visible %}
     {% if not row.has_replies %}
-        <a href="{{ row.get_absolute_url }}delete/?time={{ row.last_changed_time }}&page={{ page }}" class="warning" target="_self">delete</a>
+        <a href="{{ row.get_absolute_url }}delete/?time={{ row.last_changed_time }}&page={{ table.paginator.current_page }}" class="warning" target="_self">delete</a>
     {% endif %}
 {% else %}
     Deleted by {{ row.last_changed_by }}

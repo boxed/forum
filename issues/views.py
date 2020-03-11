@@ -40,7 +40,6 @@ def view_issue(request, project_name, issue_name):
             comments=render_room(
                 request,
                 room_pk=issue.comments_id,
-                base_template='forum/base_content.html',
                 room_header_template='forum/blank.html',
             ),
         ),
