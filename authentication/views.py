@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from tri_form import Form, Field
+from iommi import Form
 
 from .models import ResetCode
 
@@ -39,7 +39,7 @@ def forgot_password(request):
         )
         return HttpResponseRedirect(reverse(reset_password))
 
-    return render(request, template_name='auth/forgot_password.html', context=dict(base_template=settings.BASE_TEMPLATE, form=form))
+    return render(request, template_name='auth/forgot_password.html', context=dict(form=form))
 
 
 def reset_password(request):
@@ -63,4 +63,4 @@ def reset_password(request):
         reset_code.delete()
         return HttpResponseRedirect('/')
 
-    return render(request, template_name='auth/reset_password.html', context=dict(base_template=settings.BASE_TEMPLATE, form=form))
+    return render(request, template_name='auth/reset_password.html', context=dict(form=form))

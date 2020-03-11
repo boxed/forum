@@ -3,6 +3,7 @@ from hashlib import md5
 from django.contrib.auth.models import User
 from django.core import validators
 from django.db import models
+from iommi import register_factory
 
 
 class Model(models.Model):
@@ -38,13 +39,16 @@ class BinaryField(models.Field):
         return f'varbinary({str(self.max_length)})'
 
 
+register_factory(BinaryField, factory=None)
+
+
 class Message(models.Model):
-    room = models.ForeignKey(Room, on_delete=models.PROTECT)
+    room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='messages')
     text = models.TextField(blank=True, null=True)
-    parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True)
+    parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='replies')
     path = BinaryField(max_length=1000, db_index=True, null=True)
     visible = models.BooleanField(default=True)
-    user = models.ForeignKey(User, on_delete=models.PROTECT)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='messages')
     time_created = models.DateTimeField(auto_now_add=True)
 
     last_changed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)

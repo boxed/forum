@@ -1,6 +1,6 @@
 <div class="fixed-header">
     <h1>
-        {{ obj.name }}
+        {{ room.name }}
     </h1>
 
     <span id="navigate-back"><a href="/"><i class="fas fa-chevron-left"></i> menu</a></span>
@@ -11,7 +11,7 @@
             <input type="checkbox" id="drop" />
             <ul class="tools-menu">
                 <li>
-                    <a href="/subscribe/?identifier={{ obj.get_unread_id }}/">
+                    <a href="/subscribe/?identifier={{ room.get_unread_id }}">
                         Change subscription
                     </a>
                 </li>
