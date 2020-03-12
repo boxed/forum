@@ -1,9 +1,16 @@
+import functools
 from dataclasses import dataclass
 from datetime import datetime
+from typing import (
+    Dict,
+    List,
+)
 
-from typing import List, Dict, Any
-
-from tri_token import Token, TokenAttribute, TokenContainer
+from tri_token import (
+    Token,
+    TokenAttribute,
+    TokenContainer,
+)
 
 DEFAULT_TIME = datetime(2001, 1, 1)
 
@@ -138,3 +145,69 @@ def subscribe(*, user, identifier: str, subscription_type: str):
 def unsubscribe(*, user, identifier: str):
     from unread.models import Subscription
     Subscription.objects.filter(user=user, identifier=identifier).delete()
+
+
+@dataclass
+class UnreadData:
+    is_subscribed: bool
+    user_time: datetime
+    unread2_time: datetime
+    unread_identifier: str
+
+    def is_unread(self, obj_timestamp):
+        if not isinstance(obj_timestamp, datetime):
+            obj_timestamp = get_time(identifier=obj_timestamp.get_unread_identifier())
+        return obj_timestamp >= self.user_time
+
+    def is_unread2(self, obj_timestamp):
+        if not isinstance(obj_timestamp, datetime):
+            obj_timestamp = get_time(identifier=obj_timestamp.get_unread_identifier())
+        return obj_timestamp >= self.unread2_time and not self.is_unread(obj_timestamp)
+
+
+def unread_handling(model):
+    """
+    Decorator to handle unread handling. Note that this requires that you've already decoded the model coming in. You can do that with @decode_url.
+    """
+    model_name = model._meta.verbose_name.replace(' ', '_')
+    module_name = model.__module__.replace('.models', '')
+
+    def unread_handling_factory(f):
+        @functools.wraps(f)
+        def unread_handling_wrapper(request, **kwargs):
+            obj = kwargs[model_name]
+
+            unread_identifier = f'{module_name}/{model_name}:{obj.pk}'
+            user_time = get_user_time(user=request.user, identifier=unread_identifier)
+
+            if 'time' in request.GET:
+                unread2_time = datetime.fromisoformat(request.GET['time'])
+            else:
+                unread2_time = datetime.now()
+
+            # NOTE: there's a set_user_time at the very bottom of this function
+            if 'unread_from_here' in request.GET:
+                user_time = datetime.fromisoformat(request.GET['unread_from_here'])
+
+            if user_time < unread2_time:
+                unread2_time = user_time
+
+            unread_data = UnreadData(
+                is_subscribed=is_subscribed(user=request.user, identifier=unread_identifier),
+                user_time=user_time,
+                unread2_time=unread2_time,
+                unread_identifier=unread_identifier,
+            )
+
+            r = f(request=request, unread_data=unread_data, **kwargs)
+
+            if 'unread_from_here' not in request.GET:
+                user_time = datetime.now()
+
+            set_user_time(user=request.user, identifier=unread_identifier, time=user_time)
+
+            return r
+
+        return unread_handling_wrapper
+
+    return unread_handling_factory

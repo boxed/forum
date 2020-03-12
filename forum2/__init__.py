@@ -1,4 +1,5 @@
 import cProfile
+import functools
 import itertools
 import logging
 import os
@@ -19,6 +20,7 @@ from urllib.parse import quote_plus
 from django.conf import settings
 from django.db.backends import utils as django_db_utils
 from django.http import HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from termcolor import colored
 
 
@@ -433,3 +435,24 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
             return self.__dict__[attr]
         else:
             return getattr(self.cursor, attr)
+
+
+def decode_url(*models):
+
+    def decode_url_factory(f):
+        @functools.wraps(f)
+        def decode_url_wrapper(request, **kwargs):
+            decoded_kwargs = {}
+            for model in models:
+                model_name = model._meta.verbose_name.replace(' ', '_')
+                pk_key = f'{model_name}_pk'
+                if pk_key in kwargs:
+                    decoded_kwargs[model_name] = get_object_or_404(model, pk=kwargs.pop(pk_key))
+                else:
+                    decoded_kwargs[model_name] = get_object_or_404(model, name=kwargs.pop(f'{model_name}_name'))
+
+            return f(request=request, **decoded_kwargs, **kwargs)
+
+        return decode_url_wrapper
+
+    return decode_url_factory

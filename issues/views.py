@@ -3,6 +3,7 @@ from iommi import (
     Table,
     Form,
     Field,
+    Page,
 )
 from iommi.form import (
     create_object__post_handler,
@@ -35,6 +36,11 @@ def view_project(request, project_name):
 def view_issue(request, project_name, pk):
     project = Project.objects.get(name=project_name)
     issue = Issue.objects.get(project=project, pk=pk)
+
+    return Page(
+
+    )
+
     return render(
         request=request,
         template_name='issues/view_issue.html',
@@ -43,7 +49,7 @@ def view_issue(request, project_name, pk):
             project=project,
             comments=render_room(
                 request,
-                room_pk=issue.comments_id,
+                room=issue.comments,
                 room_header_template='forum/blank.html',
             ) if issue.comments_id else None,
         ),
