@@ -115,7 +115,7 @@ DATABASES = {
         'HOST': '127.0.0.1',
         'OPTIONS': {
             'charset': 'utf8mb4',
-            'init_command': 'set collation_connection=utf8mb4_unicode_ci',
+            'init_command': 'set collation_connection=utf8mb4_unicode_ci; SET sql_mode=\'STRICT_TRANS_TABLES\'',
         },
     }
 }
@@ -172,6 +172,8 @@ DATE_FORMAT = 'Y-m-d'
 
 INSTALLATION_NAME = 'SKForum'
 NO_REPLY_EMAIL = 'no-reply@killingar.net'
+
+X_FRAME_OPTIONS = 'sameorigin'
 
 IOMMI_DEFAULT_STYLE = 'forum'
 

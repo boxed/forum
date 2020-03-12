@@ -46,6 +46,7 @@ register_style(
     Style(
         style.base,
         Form__attrs__class__form=True,
+        Field__attrs__class__field=True,
     )
 )
 
@@ -262,6 +263,7 @@ def render_room(request, room_pk, **kwargs):
                 min_page_size=10,
                 template='forum/room-footer.html',
                 page=get_start_page,
+                show_always=True,
             ),
             page_size=PAGE_SIZE,
         )
