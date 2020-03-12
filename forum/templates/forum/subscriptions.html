@@ -26,7 +26,7 @@
 
 {% block content %}
     <h1>
-        {% if is_mobile %}
+        {% if request.user_agent.is_mobile %}
             SK
         {% else %}
             <a href="/welcome/">SK</a>

@@ -1,9 +1,9 @@
-from django.shortcuts import render
 from iommi import (
     Table,
     Form,
     Field,
     Page,
+    html,
 )
 from iommi.form import (
     create_object__post_handler,
@@ -11,7 +11,12 @@ from iommi.form import (
 
 from forum.models import Room
 from forum.views import render_room
+from forum2 import decode_url
 from issues.models import Project, Issue
+from unread import (
+    unread_handling,
+    is_unread,
+)
 
 
 def view_project_list(request):
@@ -33,27 +38,46 @@ def view_project(request, project_name):
     )
 
 
-def view_issue(request, project_name, pk):
-    project = Project.objects.get(name=project_name)
-    issue = Issue.objects.get(project=project, pk=pk)
+@decode_url(Project, Issue)
+@unread_handling(Issue)
+def view_issue(request, project, issue, unread_data):
+    # TODO: when you write a comment you get redirected to the room, not the issue
+    assert issue.project == project
 
-    return Page(
+    class IssuePage(Page):
+        title = html.h1(issue.name)
 
-    )
+        user_properties = html.ul(
+            attrs__class='properties',
+            children={
+                x.name: html.li(
+                    f'{x.name}: {x.data}',
+                    dict(
+                        unread=unread_data.is_unread(x.last_changed_time),
+                        unread2=unread_data.is_unread2(x.last_changed_time),
+                    ),
+                )
+                for x in issue.user_properties.all()
+            }
+        )
 
-    return render(
-        request=request,
-        template_name='issues/view_issue.html',
-        context=dict(
-            issue=issue,
-            project=project,
-            comments=render_room(
-                request,
-                room=issue.comments,
-                room_header_template='forum/blank.html',
-            ) if issue.comments_id else None,
-        ),
-    )
+        text_properties = html.ul(
+            attrs__class='properties',
+            children={
+                x.name: html.li(
+                    f'{x.name}: {x.data}',
+                    attrs__class=dict(
+                        unread=unread_data.is_unread(x.last_changed_time),
+                        unread2=unread_data.is_unread2(x.last_changed_time),
+                    ),
+                )
+                for x in issue.text_properties.all()
+            }
+        )
+
+        comments = render_room(room=issue.comments, unread_data=unread_data, room_header_template='forum/blank.html') if issue.comments_id else None
+
+    return IssuePage()
 
 
 def create_issue(request, project_name):

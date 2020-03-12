@@ -11,5 +11,5 @@ urlpatterns = [
     path('create/', Form.create(auto__model=Project).as_view()),
     path('projects/<str:project_name>/', views.view_project),
     path('projects/<str:project_name>/create/', views.create_issue),
-    path('projects/<str:project_name>/issues/<int:pk>/', views.view_issue),
+    path('projects/<str:project_name>/issues/<int:issue_pk>/', views.view_issue),
 ]
