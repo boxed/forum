@@ -16,7 +16,7 @@ class Model(models.Model):
 
 class Room(Model):
     name = models.CharField(max_length=255)
-    description = models.TextField()
+    description = models.TextField(blank=True)
     custom_data = models.CharField(max_length=1024, db_index=True, null=True, blank=True)
 
     def __str__(self):

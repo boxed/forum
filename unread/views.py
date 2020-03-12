@@ -2,9 +2,8 @@ import json
 
 from django.contrib.auth import authenticate
 from django.http import HttpResponse
-from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from tri_form import Form, Field
+from iommi import Form, Field
 
 from unread import unread_items
 from unread.models import Subscription
@@ -22,21 +21,22 @@ def change_subscription(request):
         passive = Field.boolean(display_name='Show only when unread', initial=subscription and subscription.subscription_type == 'passive')
         identifier = Field.hidden(initial=identifier_)
 
-    form = ChangeSubscriptionForm(request)
+        class Meta:
+            title = 'Change subscription'
 
-    if request.method == 'POST':
-        if form.fields_by_name.choices.value == 'Subscribe':
-            Subscription.objects.update_or_create(user=request.user, identifier=identifier_, defaults=dict(subscription_type='passive' if form.fields_by_name.passive.value else 'active'))
-        else:
-            subscription.delete()
+            def actions__submit__post_handler(form, **_):
+                if form.fields.choices.value == 'Subscribe':
+                    Subscription.objects.update_or_create(
+                        user=request.user,
+                        identifier=identifier_,
+                        defaults=dict(subscription_type='passive' if form.fields.passive.value else 'active')
+                    )
+                else:
+                    subscription.delete()
 
-    return render(
-        request,
-        template_name='unread/change_subscription.html',
-        context=dict(
-            form=form,
-        )
-    )
+    form = ChangeSubscriptionForm()
+
+    return form
 
 
 @csrf_exempt

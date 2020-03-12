@@ -1,9 +1,9 @@
+mysqlclient
 pyparsing
 django
 tri.table
 tri.token
 termcolor
-mysqlclient
 pyyaml
 ua-parser
 user-agents

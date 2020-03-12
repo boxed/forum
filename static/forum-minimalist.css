@@ -106,15 +106,16 @@ th {
 
 .form input,
 .form textarea {
-    width: 100%;
+    min-width: 500px;
 }
 .form textarea {
     height: 30rem;
     border: 1px solid lightgray;
 }
 .form input[type=submit] {
-    width: auto;
+    min-width: auto;
 }
+
 .form {
     text-align: center;
 }
@@ -133,8 +134,19 @@ th {
     white-space: nowrap;
 }
 
-.form label {
+.form label,
+.form input[type=checkbox],
+.form input[type=radio]{
     padding-right: 1rem;
+    min-width: 200px;
+    display: inline-block;
+    vertical-align: top;
+    text-align: right;
+}
+
+input[type=checkbox] + label,
+input[type=radio] + label {
+    text-align: left;
 }
 
 form .tablewrapper {

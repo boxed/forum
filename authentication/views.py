@@ -8,7 +8,7 @@ from django.db.models import Q
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
-from iommi import Form
+from iommi import Form, Field
 
 from .models import ResetCode
 
@@ -23,23 +23,27 @@ def forgot_password(request):
     class ForgotPasswordForm(Form):
         username_or_email = Field(is_valid=lambda parsed_data, **_: (parsed_data is not None, 'Unknown username or email'), parse=parse)
 
-    form = ForgotPasswordForm(request=request)
+        class Meta:
+            title = 'Password reset'
+            actions__submit__display_name = 'Send reset email'
 
-    if request.POST and form.is_valid():
-        user = form.fields_by_name.username_or_email.value
-        code = token_hex(64)
-        ResetCode.objects.filter(user=user).delete()
-        ResetCode.objects.create(user=user, code=code)
+            def actions__submit__post_handler(form, **_):
+                if not form.is_valid():
+                    return
+                user = form.fields.username_or_email.value
+                code = token_hex(64)
+                ResetCode.objects.filter(user=user).delete()
+                ResetCode.objects.create(user=user, code=code)
 
-        send_mail(
-            subject=f'{settings.INSTALLATION_NAME} password reset',
-            message=f"Your reset code is: \n{code}",
-            from_email=settings.NO_REPLY_EMAIL,
-            recipient_list=[user.email],
-        )
-        return HttpResponseRedirect(reverse(reset_password))
+                send_mail(
+                    subject=f'{settings.INSTALLATION_NAME} password reset',
+                    message=f"Your reset code is: \n{code}",
+                    from_email=settings.NO_REPLY_EMAIL,
+                    recipient_list=[user.email],
+                )
+                return HttpResponseRedirect(reverse(reset_password))
 
-    return render(request, template_name='auth/forgot_password.html', context=dict(form=form))
+    return ForgotPasswordForm()
 
 
 def reset_password(request):
@@ -57,8 +61,8 @@ def reset_password(request):
     form = ResetPasswordForm(request=request)
 
     if request.POST and form.is_valid():
-        reset_code = form.fields_by_name.reset_code.value
-        reset_code.user.set_password(form.fields_by_name.new_password.value)
+        reset_code = form.fields.reset_code.value
+        reset_code.user.set_password(form.fields.new_password.value)
         login(request, reset_code.user)
         reset_code.delete()
         return HttpResponseRedirect('/')
