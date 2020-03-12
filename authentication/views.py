@@ -6,7 +6,6 @@ from django.contrib.auth.models import User
 from django.core.mail import send_mail
 from django.db.models import Q
 from django.http import HttpResponseRedirect
-from django.shortcuts import render
 from django.urls import reverse
 from iommi import Form, Field
 
@@ -24,7 +23,7 @@ def forgot_password(request):
         username_or_email = Field(is_valid=lambda parsed_data, **_: (parsed_data is not None, 'Unknown username or email'), parse=parse)
 
         class Meta:
-            title = 'Password reset'
+            title = 'Request password reset'
             actions__submit__display_name = 'Send reset email'
 
             def actions__submit__post_handler(form, **_):
@@ -58,13 +57,15 @@ def reset_password(request):
         new_password = Field.password()
         confirm_password = Field.password(is_valid=lambda parsed_data, **_: (parsed_data == request.POST.get('new_password'), 'Passwords do not match'))
 
-    form = ResetPasswordForm(request=request)
+        class Meta:
+            title = 'Reset password'
 
-    if request.POST and form.is_valid():
-        reset_code = form.fields.reset_code.value
-        reset_code.user.set_password(form.fields.new_password.value)
-        login(request, reset_code.user)
-        reset_code.delete()
-        return HttpResponseRedirect('/')
+            def actions__submit__post_handler(form, **_):
+                if form.is_valid():
+                    reset_code = form.fields.reset_code.value
+                    reset_code.user.set_password(form.fields.new_password.value)
+                    login(request, reset_code.user)
+                    reset_code.delete()
+                    return HttpResponseRedirect('/')
 
-    return render(request, template_name='auth/reset_password.html', context=dict(form=form))
+    return ResetPasswordForm()

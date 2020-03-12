@@ -16,8 +16,11 @@ def change_subscription(request):
     except Subscription.DoesNotExist:
         subscription = None
 
+    subscribed = 'Subscribed'
+    unsubscribed = 'Unsubscribed'
+
     class ChangeSubscriptionForm(Form):
-        choices = Field.radio(choices=['Subscribe', 'Unsubscribe'], initial='Subscribe')
+        choices = Field.radio(choices=[subscribed, unsubscribed], initial=unsubscribed if subscription is None else subscribed, display_name='')
         passive = Field.boolean(display_name='Show only when unread', initial=subscription and subscription.subscription_type == 'passive')
         identifier = Field.hidden(initial=identifier_)
 
@@ -25,14 +28,22 @@ def change_subscription(request):
             title = 'Change subscription'
 
             def actions__submit__post_handler(form, **_):
-                if form.fields.choices.value == 'Subscribe':
-                    Subscription.objects.update_or_create(
-                        user=request.user,
-                        identifier=identifier_,
-                        defaults=dict(subscription_type='passive' if form.fields.passive.value else 'active')
-                    )
+                subscription_type = 'passive' if form.fields.passive.value else 'active'
+                if form.fields.choices.value == subscribed:
+                    if subscription is None:
+                        Subscription.objects.create(
+                            user=request.user,
+                            identifier=identifier_,
+                            subscription_type=subscription_type,
+                        )
+                    else:
+                        subscription.subscription_type = subscription_type
+                        subscription.save()
                 else:
-                    subscription.delete()
+                    if subscription:
+                        subscription.delete()
+                    else:
+                        pass  # already unsubscribed
 
     form = ChangeSubscriptionForm()
 

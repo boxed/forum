@@ -1,65 +1,67 @@
 from difflib import SequenceMatcher
 
-from django.shortcuts import render
+from django.shortcuts import (
+    render,
+)
 from django.utils.safestring import mark_safe
-from tri_form import Field
-from tri_form.views import create_object
-from tri_table import render_table_to_response
+from iommi import Table
 
+from forum2 import decode_url
+from unread import (
+    unread_handling,
+    is_unread,
+)
 from wiki.models import Context, Document, DocumentVersion
 
 
 def view_context_list(request):
-    return render_table_to_response(
-        request=request,
-        table__data=Context.objects.all().order_by('name'),
-        table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
-        table__column__name__cell__format=lambda value, row, **_: value if value != 'Private wiki' else f'Private wiki for {row.custom_data}',
-        table__include=['name'],
-        context=dict(title='Wiki contexts'),
-        template='wiki/list.html',   # TODO: Fix when tri.table has base_template
+    return Table(
+        auto__model=Context,
+        auto__include=['name'],
+        columns__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        columns__name__cell__format=lambda value, row, **_: value if value != 'Private wiki' else f'Private wiki for {row.custom_data}',
+        title='Wiki contexts',
     )
 
 
-def view_context(request, context_name):
-    return render_table_to_response(
-        request=request,
-        table__data=Document.objects.filter(context__name__iexact=context_name).order_by('pk'),
-        table__column__name__cell__url=lambda row, **_: row.get_absolute_url(),
-        table__include=['name'],
-        context=dict(title=f'Documents of context {Context.objects.get(name__iexact=context_name)}'),
-        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
+@decode_url(Context)
+def view_context(request, context):
+    return Table(
+        title=f'Documents of context {context}',
+        auto__rows=Document.objects.filter(context=context),
+        auto__include=['name'],
+        columns__name__cell__url=lambda row, **_: row.get_absolute_url(),
+        row__attrs__class__unread=lambda row, **_: is_unread(user=request.user, identifier=row.get_unread_identifier()),
     )
 
 
-def view_document(request, context_name, document_name):
-    doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
-    document_version = doc.versions.all().order_by('-pk')[0]
+@decode_url(Context, Document)
+@unread_handling(Document)
+def view_document(request, context, document, unread_data):
+    assert context == document.context
+    document_version = document.versions.all().order_by('-pk')[0]
+    return render(request, 'wiki/document.html', context=dict(title=document_version.name, document_version=document_version))
+
+
+@decode_url(Context, Document)
+def view_version_list(request, context, document):
+    return Table(
+        title=f'Versions of {document}',
+        auto__include=['name', 'version', 'changed_time'],
+        auto__rows=DocumentVersion.objects.filter(document=document).order_by('version'),
+        columns__version__cell__url=lambda row, **_: row.get_absolute_url(),
+    )
+
+
+@decode_url(Context, Document, DocumentVersion)
+def view_version(request, context, document, document_version):
     return render(request, 'wiki/document.html', context=dict(document_version=document_version))
 
 
-def view_version_list(request, context_name, document_name):
-    doc = Document.objects.get(context__name__iexact=context_name, name__iexact=document_name)
-    return render_table_to_response(
-        request=request,
-        context=dict(
-            title=f'Versions of {doc}',
-        ),
-        table__data=DocumentVersion.objects.filter(document=doc).order_by('version'),
-        table__include=['name', 'version', 'changed_time'],
-        table__column__version__cell__url=lambda row, **_: row.get_absolute_url(),
-        template='wiki/list.html',  # TODO: Fix when tri.table has base_template
-    )
-
-
-def view_version(request, context_name, document_name, version_pk):
-    return render(request, 'wiki/document.html', context=dict(document_version=DocumentVersion.objects.get(pk=version_pk)))
-
-
-def view_diff(request, context_name, document_name, version_pk, version_pk_2):
-    doc_a = DocumentVersion.objects.get(pk=version_pk)
+@decode_url(Context, Document, DocumentVersion)
+def view_diff(request, context, document, document_version, version_pk_2):
     doc_b = DocumentVersion.objects.get(pk=version_pk_2)
-    a = doc_a.content
+    a = document_version.content
     b = doc_b.content
 
     diff = ''
@@ -79,7 +81,7 @@ def view_diff(request, context_name, document_name, version_pk, version_pk_2):
         else:
             assert False, f'unknown op code {tag}'
 
-    return render(request, 'wiki/diff.html', context=dict(a=doc_a, b=doc_b, diff=mark_safe(diff)))
+    return render(request, 'wiki/diff.html', context=dict(a=document_version, b=doc_b, diff=mark_safe(diff)))
 
 
 def edit(request, context_name, document_name):

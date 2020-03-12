@@ -13,6 +13,9 @@ class Model(models.Model):
     class Meta:
         abstract = True
 
+    def get_unread_identifier(self):
+        return f'wiki/context/{self._meta.verbose_name}:{self.pk}'
+
 
 class Room(Model):
     name = models.CharField(max_length=255)

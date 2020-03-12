@@ -17,13 +17,8 @@ from iommi import (
     Fragment,
     Page,
     Table,
-    style,
 )
 from iommi.form import bool_parse
-from iommi.style import (
-    Style,
-    register_style,
-)
 from tri_declarative import dispatch
 
 from forum.models import (
@@ -32,23 +27,15 @@ from forum.models import (
     Room,
     User,
 )
+from forum2 import decode_url
 from unread import (
-    get_user_time,
     is_subscribed,
     set_time,
-    set_user_time,
     subscription_data,
+    unread_handling,
+    UnreadData,
 )
 from unread.models import SubscriptionTypes
-
-register_style(
-    'forum',
-    Style(
-        style.base,
-        Form__attrs__class__form=True,
-        Field__attrs__class__field=True,
-    )
-)
 
 PAGE_SIZE = 10
 
@@ -152,11 +139,7 @@ def write(request, room_pk, message_pk=None):
 
         script = mark_safe("""
         <script>
-            var x = document.getElementById("id_text")
-            x.focus();
-            x.selectionStart =  x.value.length;
-            // TODO: fix this. Used for ctrl+enter I think
-            // x.onkeydown = formKeyboardHandler;
+            auto_select();
         </script>
         """)
 
@@ -169,55 +152,35 @@ def write(request, room_pk, message_pk=None):
 @dispatch(
     room_header_template='forum/room-header.html',
 )
-def render_room(request, room_pk, **kwargs):
-    # TODO: @dispatch on this view, and params to be able to customize rendering of the room
-    room = get_object_or_404(Room, pk=room_pk)
-
-    user_time = get_user_time(user=request.user, identifier=f'forum/room:{room.pk}')
-    show_hidden = bool_parse(request.GET.get('show_hidden', '0'))
-
+@unread_handling(Room)
+def render_room(request, room, unread_data: UnreadData, **kwargs):
     def unread_from_here_href(row: Message, **_):
         params = request.GET.copy()
         params.setlist('unread_from_here', [row.last_changed_time.isoformat()])
         return mark_safe('?' + params.urlencode() + "&")
 
-    if 'time' in request.GET:
-        unread2_time = datetime.fromisoformat(request.GET['time'])
-    else:
-        unread2_time = datetime.now()
-
-    # NOTE: there's a set_user_time at the very bottom of this function
-    if 'unread_from_here' in request.GET:
-        user_time = datetime.fromisoformat(request.GET['unread_from_here'])
-
-    if user_time < unread2_time:
-        unread2_time = user_time
-
     # TODO: show many pages at once if unread? Right now we show the first unread page.
     def get_start_page(paginator, **_):
         # Find first unread page
         try:
-            first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=user_time).order_by('path')[0]
+            first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=unread_data.user_time).order_by('path')[0]
             messages_before_first_unread = room.messages.filter(path__lt=first_unread_message.path).count()
             return messages_before_first_unread // PAGE_SIZE + 1
         except IndexError:
             return paginator.number_of_pages
 
-    messages = Message.objects.filter(room__pk=room_pk).prefetch_related('user', 'room')
-    if not show_hidden:
-        messages = messages.filter(visible=True)
-
-    def is_unread(row, **_):
-        return row.last_changed_time >= user_time
-
-    def is_unread2(row, **_):
-        return row.last_changed_time >= unread2_time and not is_unread(row=row)
+    def rows(table, **_):
+        messages = Message.objects.filter(room=room).prefetch_related('user', 'room')
+        table.extra.show_hidden = bool_parse(table.get_request().GET.get('show_hidden', '0'))
+        if not table.extra.show_hidden:
+            messages = messages.filter(visible=True)
+        return messages
 
     def preprocess_rows(rows, table, **_):
         rows = list(rows)
         first_new = None
         for d in rows:
-            if is_unread(row=d):
+            if unread_data.is_unread(d.last_changed_time):
                 first_new = d
                 break
 
@@ -238,8 +201,9 @@ def render_room(request, room_pk, **kwargs):
         table = Table(
             template='forum/room.html',
             title=None,
-            auto__rows=messages,
+            auto__model=Message,
             auto__exclude=['path'],
+            auto__rows=rows,
             columns__unread_from_here_href=Column(attr=None, cell__value=unread_from_here_href),
             preprocess_rows=preprocess_rows,
             header__template=Template(''),
@@ -249,8 +213,8 @@ def render_room(request, room_pk, **kwargs):
                 message=True,
                 current_user=lambda row, **_: request.user == row.user,
                 other_user=lambda row, **_: request.user != row.user,
-                unread=is_unread,
-                unread2=is_unread2,
+                unread=lambda row, **_: unread_data.is_unread(row.last_changed_time),
+                unread2=lambda row, **_: unread_data.is_unread2(row.last_changed_time),
             ),
             attrs=dict(
                 cellpadding='0',
@@ -272,23 +236,20 @@ def render_room(request, room_pk, **kwargs):
             return dict(
                 page=self,
                 room=room,
-                show_hidden=show_hidden,
-                time=unread2_time or user_time,
-                is_subscribed=is_subscribed(user=request.user, identifier=f'forum/room:{room.pk}'),
+                unread_identifier=unread_data.unread_identifier,
+                title=room.name,
+                time=unread_data.unread2_time or unread_data.user_time,  # TODO: handle this in UnreadData?
+                is_subscribed=is_subscribed,
                 is_mobile=request.user_agent.is_mobile,
                 **kwargs,
             )
 
-    result = RoomPage().bind(request=request).render_to_response()
-    if 'unread_from_here' not in request.GET:
-        user_time = datetime.now()
-
-    set_user_time(user=request.user, identifier=f'forum/room:{room.pk}', time=user_time)
-    return result
+    return RoomPage()
 
 
-def view_room(request, room_pk):
-    return render_room(request, room_pk=room_pk)
+@decode_url(Room)
+def view_room(request, room):
+    return render_room(request, room=room)
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):
