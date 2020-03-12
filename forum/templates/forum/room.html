@@ -7,7 +7,7 @@
 
     <hr>
 
-    {% if is_mobile %}
+    {% if request.user_agent.is_mobile %}
         <script>
             start_subscription_refresh_subpage();
         </script>

@@ -152,10 +152,9 @@ def write(request, room_pk, message_pk=None):
 @dispatch(
     room_header_template='forum/room-header.html',
 )
-@unread_handling(Room)
-def render_room(request, room, unread_data: UnreadData, **kwargs):
-    def unread_from_here_href(row: Message, **_):
-        params = request.GET.copy()
+def render_room(room, unread_data: UnreadData, **kwargs):
+    def unread_from_here_href(table, row: Message, **_):
+        params = table.get_request().GET.copy()
         params.setlist('unread_from_here', [row.last_changed_time.isoformat()])
         return mark_safe('?' + params.urlencode() + "&")
 
@@ -211,8 +210,8 @@ def render_room(request, room, unread_data: UnreadData, **kwargs):
             row__attrs__class=dict(
                 indent_0=lambda row, **_: row.indent == 0,
                 message=True,
-                current_user=lambda row, **_: request.user == row.user,
-                other_user=lambda row, **_: request.user != row.user,
+                current_user=lambda table, row, **_: table.get_request().user == row.user,
+                other_user=lambda table, row, **_: table.get_request().user != row.user,
                 unread=lambda row, **_: unread_data.is_unread(row.last_changed_time),
                 unread2=lambda row, **_: unread_data.is_unread2(row.last_changed_time),
             ),
@@ -240,7 +239,6 @@ def render_room(request, room, unread_data: UnreadData, **kwargs):
                 title=room.name,
                 time=unread_data.unread2_time or unread_data.user_time,  # TODO: handle this in UnreadData?
                 is_subscribed=is_subscribed,
-                is_mobile=request.user_agent.is_mobile,
                 **kwargs,
             )
 
@@ -248,8 +246,9 @@ def render_room(request, room, unread_data: UnreadData, **kwargs):
 
 
 @decode_url(Room)
-def view_room(request, room):
-    return render_room(request, room=room)
+@unread_handling(Room)
+def view_room(request, unread_data, room):
+    return render_room(unread_data=unread_data, room=room)
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):
@@ -306,7 +305,6 @@ def subscriptions(request, template_name='forum/subscriptions.html'):
         context=dict(
             result=result,
             has_unread=has_unread,
-            is_mobile=request.user_agent.is_mobile,
         )
     )
 
