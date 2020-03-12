@@ -13,10 +13,7 @@ from forum.models import Room
 from forum.views import render_room
 from forum2 import decode_url
 from issues.models import Project, Issue
-from unread import (
-    unread_handling,
-    is_unread,
-)
+from unread import unread_handling
 
 
 def view_project_list(request):

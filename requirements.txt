@@ -1,7 +1,7 @@
+iommi
 mysqlclient
 pyparsing
 django
-tri.table
 tri.token
 termcolor
 pyyaml
