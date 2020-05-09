@@ -27,8 +27,12 @@ SECRET_KEY = '#_26$$trs=(9en(wh6wc*+4nvh7n0d2t0b#mluna_=uea5k4*6'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['*']
-
+ALLOWED_HOSTS = [
+    'forum.kodare.com',
+    'forum.killingar.net',
+    '127.0.0.1',
+    'localhost',
+]
 
 # Application definition
 
@@ -107,10 +111,10 @@ WSGI_APPLICATION = 'forum2.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'forum3',
-        'USER': 'root',
-        'PASSWORD': '',
-        'HOST': '127.0.0.1',
+        'NAME': 'forum',
+        'USER': os.environ['DOKKU_MYSQL_MYSQL_ENV_MYSQL_USER'],
+        'PASSWORD': os.environ['DOKKU_MYSQL_MYSQL_ENV_MYSQL_PASSWORD'],
+        'HOST': os.environ['DOKKU_MYSQL_MYSQL_PORT_3306_TCP_ADDR'],
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': 'set collation_connection=utf8mb4_unicode_ci',
