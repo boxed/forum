@@ -163,10 +163,6 @@ USE_TZ = False
 STATIC_URL = '/static/'
 STATIC_ROOT = Path(__file__).parent.parent / 'static/'
 
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, "static"),
-]
-
 
 # AUTH_USER_MODEL = 'forum.User'
 
