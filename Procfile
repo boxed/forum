@@ -1,1 +1,1 @@
-web: gunicorn relatedhow.wsgi -t 36000 --log-file -
+web: gunicorn forum2.wsgi -t 36000 --log-file -
