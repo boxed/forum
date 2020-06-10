@@ -13,7 +13,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
-from django.urls import path, include, re_path
+from django.urls import path, include
 from iommi.admin import Admin
 
 import forum.views as views
@@ -22,6 +22,12 @@ import forum2.views as f2views
 import unread.views
 import unread.views as unread_views
 import issues
+
+
+class MyAdmin(Admin):
+    class Meta:
+        iommi_style = 'bootstrap'
+
 
 urlpatterns = [
     path('', forum2.views.index),
@@ -49,5 +55,5 @@ urlpatterns = [
 
     path('issues/', include(issues.urls)),
 
-    path('iommi-admin/', include(Admin.urls())),
+    path('iommi-admin/', include(MyAdmin.urls())),
 ]
