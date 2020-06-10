@@ -202,7 +202,7 @@ def render_room(room, unread_data: UnreadData, **kwargs):
             title=None,
             auto__model=Message,
             auto__exclude=['path'],
-            auto__rows=rows,
+            rows=rows,
             columns__unread_from_here_href=Column(attr=None, cell__value=unread_from_here_href),
             preprocess_rows=preprocess_rows,
             header__template=Template(''),
