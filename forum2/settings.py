@@ -38,7 +38,6 @@ ALLOWED_HOSTS = [
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
@@ -114,9 +113,9 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'forum',
-        'USER': os.environ['DOKKU_MYSQL_MYSQL_ENV_MYSQL_USER'],
-        'PASSWORD': os.environ['DOKKU_MYSQL_MYSQL_ENV_MYSQL_PASSWORD'],
-        'HOST': os.environ['DOKKU_MYSQL_MYSQL_PORT_3306_TCP_ADDR'],
+        'USER': os.environ.get('DOKKU_MYSQL_MYSQL_ENV_MYSQL_USER', 'root'),
+        'PASSWORD': os.environ.get('DOKKU_MYSQL_MYSQL_ENV_MYSQL_PASSWORD', ''),
+        'HOST': os.environ.get('DOKKU_MYSQL_MYSQL_PORT_3306_TCP_ADDR', '127.0.0.1'),
         'OPTIONS': {
             'charset': 'utf8mb4',
             'init_command': 'set collation_connection=utf8mb4_unicode_ci',
