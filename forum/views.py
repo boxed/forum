@@ -149,106 +149,116 @@ def write(request, room_pk, message_pk=None):
     return WritePage()
 
 
-@dispatch(
-    room_header_template='forum/room-header.html',
-)
-def render_room(room, unread_data: UnreadData, **kwargs):
-    def unread_from_here_href(table, row: Message, **_):
-        params = table.get_request().GET.copy()
-        params.setlist('unread_from_here', [row.last_changed_time.isoformat()])
-        return mark_safe('?' + params.urlencode() + "&")
+def room__unread_from_here_href(table, row: Message, **_):
+    params = table.get_request().GET.copy()
+    params.setlist('unread_from_here', [row.last_changed_time.isoformat()])
+    return mark_safe('?' + params.urlencode() + "&")
 
-    # TODO: show many pages at once if unread? Right now we show the first unread page.
-    def get_start_page(paginator, **_):
-        # Find first unread page
-        try:
-            first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=unread_data.user_time).order_by('path')[0]
-            messages_before_first_unread = room.messages.filter(path__lt=first_unread_message.path).count()
-            return messages_before_first_unread // PAGE_SIZE + 1
-        except IndexError:
-            return paginator.number_of_pages
 
-    def rows(table, **_):
-        messages = Message.objects.filter(room=room).prefetch_related('user', 'room')
-        table.extra.show_hidden = bool_parse(table.get_request().GET.get('show_hidden', '0'))
-        if not table.extra.show_hidden:
-            messages = messages.filter(visible=True)
-        return messages
+# TODO: show many pages at once if unread? Right now we show the first unread page.
+def room__get_start_page(paginator, room, unread_data, **_):
+    # Find first unread page
+    try:
+        first_unread_message = Message.objects.filter(room=room, last_changed_time__gte=unread_data.user_time).order_by('path')[0]
+        messages_before_first_unread = room.messages.filter(path__lt=first_unread_message.path).count()
+        return messages_before_first_unread // PAGE_SIZE + 1
+    except IndexError:
+        return paginator.number_of_pages
 
-    def preprocess_rows(rows, table, **_):
-        rows = list(rows)
-        first_new = None
-        for d in rows:
-            if unread_data.is_unread(d.last_changed_time):
-                first_new = d
-                break
 
-        table.extra.unread = first_new is not None
+def room__rows(table, room, **_):
+    messages = Message.objects.filter(room=room).prefetch_related('user', 'room')
+    table.extra.show_hidden = bool_parse(table.get_request().GET.get('show_hidden', '0'))
+    if not table.extra.show_hidden:
+        messages = messages.filter(visible=True)
+    return messages
 
-        first_new_or_last_message = first_new
-        if first_new_or_last_message is None and rows:
-            first_new_or_last_message = rows[-1]
 
-        if first_new_or_last_message is not None:
-            # This is used by the view
-            first_new_or_last_message.first_new = True
+def room__preprocess_rows(rows, table, unread_data, **_):
+    rows = list(rows)
+    first_new = None
+    for d in rows:
+        if unread_data.is_unread(d.last_changed_time):
+            first_new = d
+            break
 
-        return rows
+    table.extra.unread = first_new is not None
 
-    class RoomPage(Page):
+    first_new_or_last_message = first_new
+    if first_new_or_last_message is None and rows:
+        first_new_or_last_message = rows[-1]
 
-        table = Table(
-            template='forum/room.html',
-            title=None,
-            auto__model=Message,
-            auto__exclude=['path'],
-            rows=rows,
-            columns__unread_from_here_href=Column(attr=None, cell__value=unread_from_here_href),
-            preprocess_rows=preprocess_rows,
-            header__template=Template(''),
-            row__template=get_template('forum/message.html'),
-            row__attrs__class=dict(
-                indent_0=lambda row, **_: row.indent == 0,
-                message=True,
-                current_user=lambda table, row, **_: table.get_request().user == row.user,
-                other_user=lambda table, row, **_: table.get_request().user != row.user,
-                unread=lambda row, **_: unread_data.is_unread(row.last_changed_time),
-                unread2=lambda row, **_: unread_data.is_unread2(row.last_changed_time),
-            ),
-            attrs=dict(
-                cellpadding='0',
-                cellspacing='0',
-                id='first_newtable',
-                align='center',
-                class__roomtable=True,
-            ),
-            paginator=dict(
-                min_page_size=10,
-                template='forum/room-footer.html',
-                page=get_start_page,
-                show_always=True,
-            ),
-            page_size=PAGE_SIZE,
+    if first_new_or_last_message is not None:
+        # This is used by the view
+        first_new_or_last_message.first_new = True
+
+    return rows
+
+
+class RoomPage(Page):
+    def __init__(
+            self,
+            room,
+            unread_data,
+            room_header_template='forum/room-header.html',
+            **kwargs
+    ):
+        self.room = room
+        self.unread_data = unread_data
+        self.room_header_template = room_header_template
+        super(RoomPage, self).__init__(**kwargs)
+
+    table = Table(
+        template='forum/room.html',
+        title=None,
+        auto__model=Message,
+        auto__exclude=['path'],
+        rows=room__rows,
+        columns__unread_from_here_href=Column(attr=None, cell__value=room__unread_from_here_href),
+        preprocess_rows=room__preprocess_rows,
+        header__template=Template(''),
+        row__template=get_template('forum/message.html'),
+        row__attrs__class=dict(
+            indent_0=lambda row, **_: row.indent == 0,
+            message=True,
+            current_user=lambda table, row, **_: table.get_request().user == row.user,
+            other_user=lambda table, row, **_: table.get_request().user != row.user,
+            unread=lambda row, unread_data, **_: unread_data.is_unread(row.last_changed_time),
+            unread2=lambda row, unread_data, **_: unread_data.is_unread2(row.last_changed_time),
+        ),
+        attrs=dict(
+            cellpadding='0',
+            cellspacing='0',
+            id='first_newtable',
+            align='center',
+            class__roomtable=True,
+        ),
+        paginator=dict(
+            min_page_size=10,
+            template='forum/room-footer.html',
+            page=room__get_start_page,
+            show_always=True,
+        ),
+        page_size=PAGE_SIZE,
+    )
+
+    def own_evaluate_parameters(self):
+        return dict(
+            page=self,
+            room=self.room,
+            unread_data=self.unread_data,
+            unread_identifier=self.unread_data.unread_identifier,
+            title=self.room.name,
+            time=self.unread_data.unread2_time or self.unread_data.user_time,  # TODO: handle this in UnreadData?
+            is_subscribed=is_subscribed,
+            room_header_template=self.room_header_template,
         )
-
-        def own_evaluate_parameters(self):
-            return dict(
-                page=self,
-                room=room,
-                unread_identifier=unread_data.unread_identifier,
-                title=room.name,
-                time=unread_data.unread2_time or unread_data.user_time,  # TODO: handle this in UnreadData?
-                is_subscribed=is_subscribed,
-                **kwargs,
-            )
-
-    return RoomPage()
 
 
 @decode_url(Room)
 @unread_handling(Room)
 def view_room(request, unread_data, room):
-    return render_room(unread_data=unread_data, room=room)
+    return RoomPage(room=room, unread_data=unread_data)
 
 
 def subscriptions(request, template_name='forum/subscriptions.html'):

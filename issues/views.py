@@ -1,18 +1,23 @@
 from iommi import (
-    Table,
-    Form,
     Field,
-    Page,
+    Form,
     html,
+    Page,
+    Table,
 )
 from iommi.form import (
     create_object__post_handler,
 )
 
 from forum.models import Room
-from forum.views import render_room
+from forum.views import (
+    RoomPage,
+)
 from forum2 import decode_url
-from issues.models import Project, Issue
+from issues.models import (
+    Issue,
+    Project,
+)
 from unread import unread_handling
 
 
@@ -72,7 +77,7 @@ def view_issue(request, project, issue, unread_data):
             }
         )
 
-        comments = render_room(room=issue.comments, unread_data=unread_data, room_header_template='forum/blank.html') if issue.comments_id else None
+        comments = RoomPage(room=issue.comments, unread_data=unread_data, room_header_template='forum/blank.html') if issue.comments_id else None
 
     return IssuePage()
 
