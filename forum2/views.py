@@ -87,13 +87,24 @@ def login(request):
             return False
 
     class LoginPage(Page):
+        styling = html.style("""
+        .extra_links, .form {
+            margin-left: auto;
+            margin-right: auto;
+            width: 710px;
+        }
+        """)
+
         form = LoginForm()
 
-        forgot_passsword = html.a('Forgot your password?', attrs__href='/forgot-password/')
-        p = html.p()
-        create_account = html.a('Create account', attrs__href='/create-account/')
+        links = html.div(
+            attrs__class__extra_links=True,
+            attrs__style={'text-align': 'right'},
+            children__create_account=html.a('Create account', attrs__href='/create-account/'),
+            children__p=html.div(),
+            children__forgot_passsword=html.a('Forgot your password?', attrs__href='/forgot-password/'),
+        )
 
         set_focus = html.script(mark_safe('document.getElementById("id_username").focus();'))
 
     return LoginPage()
-#    return render(request, 'forum/login.html', context=dict(form=form, url='/'))

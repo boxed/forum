@@ -45,11 +45,11 @@ def view_issue(request, project, issue, unread_data):
         title = html.h1(issue.name)
 
         user_properties = html.ul(
-            attrs__class='properties',
+            attrs__class__properties=True,
             children={
                 x.name: html.li(
                     f'{x.name}: {x.data}',
-                    dict(
+                    attrs__class=dict(
                         unread=unread_data.is_unread(x.last_changed_time),
                         unread2=unread_data.is_unread2(x.last_changed_time),
                     ),
@@ -59,7 +59,7 @@ def view_issue(request, project, issue, unread_data):
         )
 
         text_properties = html.ul(
-            attrs__class='properties',
+            attrs__class__properties=True,
             children={
                 x.name: html.li(
                     f'{x.name}: {x.data}',
