@@ -4,8 +4,13 @@ from django.shortcuts import (
     render,
 )
 from django.utils.safestring import mark_safe
-from iommi import Table
+from iommi import (
+    Field,
+    Form,
+    Table,
+)
 
+from forum.utils import pre_format
 from forum2 import decode_url
 from unread import (
     unread_handling,
@@ -55,14 +60,14 @@ def view_version_list(request, context, document):
 
 @decode_url(Context, Document, DocumentVersion)
 def view_version(request, context, document, document_version):
-    return render(request, 'wiki/document.html', context=dict(document_version=document_version))
+    return render(request, 'wiki/document.html', context=dict(title=document_version.name, document_version=document_version))
 
 
 @decode_url(Context, Document, DocumentVersion)
 def view_diff(request, context, document, document_version, version_pk_2):
     doc_b = DocumentVersion.objects.get(pk=version_pk_2)
-    a = document_version.content
-    b = doc_b.content
+    a = pre_format(document_version.content)
+    b = pre_format(doc_b.content)
 
     diff = ''
     s = SequenceMatcher(lambda x: x in " \t", a, b, autojunk=False)
@@ -81,7 +86,15 @@ def view_diff(request, context, document, document_version, version_pk_2):
         else:
             assert False, f'unknown op code {tag}'
 
-    return render(request, 'wiki/diff.html', context=dict(a=document_version, b=doc_b, diff=mark_safe(diff)))
+    return render(
+        request,
+        'wiki/diff.html',
+        context=dict(
+            a=document_version,
+            b=doc_b,
+            diff=mark_safe(diff),
+        )
+    )
 
 
 def edit(request, context_name, document_name):
@@ -89,20 +102,19 @@ def edit(request, context_name, document_name):
     document_version = doc.versions.all().order_by('-pk')[0]
     # TODO:
     #   - on save, validate that no one has edited in the meantime
-    return create_object(
-        request=request,
-        model=DocumentVersion,
-        form__exclude=['changed_time'],
-        form__field=dict(
+    return Form.create(
+        auto__model=DocumentVersion,
+        auto__exclude=['changed_time'],
+        title=f'Edit {doc}',
+        fields=dict(
             document=dict(
                 initial=doc,
                 editable=False,
-                call_target=Field.hidden,
+                call_target__attribute='hidden',
             ),
             name__initial=document_version.name,
             content=dict(
                 initial=document_version.content,
-                call_target=Field.textarea,
                 attrs__style=dict(
                     height='40rem',
                     width='50rem',
@@ -115,4 +127,5 @@ def edit(request, context_name, document_name):
                 call_target=Field.hidden,
             ),
         ),
+        actions__submit__display_name='Save',
     )

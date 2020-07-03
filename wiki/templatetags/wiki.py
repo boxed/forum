@@ -65,7 +65,7 @@ wikiMarkup = literal | link | quote | bold | italic | underline | divider
 
 
 def wiki_render(s):
-    return mark_safe(wikiMarkup.transformString(s))  # TODO: yea, this isn't safe...
+    return mark_safe(wikiMarkup.transformString(s))
 
 
 @register.filter

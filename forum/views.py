@@ -1,6 +1,3 @@
-import re
-from datetime import datetime
-# from lxml.html.clean import clean_html  # TODO: use to clean on the way in? this thing adds a p tag so need to strip that
 from itertools import groupby
 
 from django.http import HttpResponseRedirect
@@ -19,7 +16,6 @@ from iommi import (
     Table,
 )
 from iommi.form import bool_parse
-from tri_declarative import dispatch
 
 from forum.models import (
     bytes_from_int,
@@ -27,13 +23,17 @@ from forum.models import (
     Room,
     User,
 )
+from forum.utils import (
+    get_object_or_none,
+    pre_format,
+    pre_format_legacy,
+)
 from forum2 import decode_url
 from unread import (
     is_subscribed,
     set_time,
     subscription_data,
     unread_handling,
-    UnreadData,
 )
 from unread.models import SubscriptionTypes
 
@@ -45,24 +45,6 @@ def rooms(request):
         auto__model=Room,
         columns__name__cell__url=lambda row, **_: row.get_absolute_url(),
     )
-
-
-def pre_format(s):
-    s = s.replace('\t', '    ')
-    s = re.sub('^( +)', lambda m: '&nbsp;' * len(m.groups()[0]), s, flags=re.MULTILINE)
-    s = s.replace('\n', '<br>')
-    return mark_safe(s)
-
-
-def parse_datetime(s):
-    return datetime.strptime(s, '%Y-%m-%d %H:%M:%S.%f')
-
-
-def get_object_or_none(model, **kwargs):
-    try:
-        return model.objects.get(**kwargs)
-    except model.DoesNotExist:
-        return None
 
 
 def write(request, room_pk, message_pk=None):
@@ -215,6 +197,9 @@ class RoomPage(Page):
         auto__exclude=['path'],
         rows=room__rows,
         columns__unread_from_here_href=Column(attr=None, cell__value=room__unread_from_here_href),
+        # Keep backwards compatibility with old (super unsafe!) forum, but use safe markdown for new messages
+        columns__text__cell__format=lambda value, row, **_: pre_format(value) if row.time_created.year > 2015 else pre_format_legacy(value),
+        columns__text__cell__tag=None,
         preprocess_rows=room__preprocess_rows,
         header__template=Template(''),
         row__template=get_template('forum/message.html'),

@@ -1,6 +1,6 @@
 from django import template
 
-from forum.views import pre_format
+from forum.utils import pre_format
 
 register = template.Library()
 
