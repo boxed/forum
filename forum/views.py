@@ -12,6 +12,7 @@ from iommi import (
     Column,
     Form,
     Fragment,
+    html,
     Page,
     Table,
 )
@@ -182,16 +183,15 @@ class RoomPage(Page):
             self,
             room,
             unread_data,
-            room_header_template='forum/room-header.html',
             **kwargs
     ):
         self.room = room
         self.unread_data = unread_data
-        self.room_header_template = room_header_template
         super(RoomPage, self).__init__(**kwargs)
 
+    header = Fragment(template='forum/room-header.html')
+
     table = Table(
-        template='forum/room.html',
         title=None,
         auto__model=Message,
         auto__exclude=['path'],
@@ -227,6 +227,13 @@ class RoomPage(Page):
         page_size=PAGE_SIZE,
     )
 
+    hr = html.hr()
+
+    refresh = html.script(
+        'start_subscription_refresh_subpage();',
+        include=lambda request, **_: request.user_agent.is_mobile,
+    )
+
     def own_evaluate_parameters(self):
         return dict(
             page=self,
@@ -236,7 +243,6 @@ class RoomPage(Page):
             title=self.room.name,
             time=self.unread_data.unread2_time or self.unread_data.user_time,  # TODO: handle this in UnreadData?
             is_subscribed=is_subscribed,
-            room_header_template=self.room_header_template,
         )
 
 
