@@ -48,39 +48,38 @@ def rooms(request):
     )
 
 
-def write(request, room_pk, message_pk=None):
+def write__on_save(instance, **_):
+    if not instance.path:
+        if instance.parent:
+            instance.path = instance.parent.path + bytes_from_int(instance.pk)
+        else:
+            instance.path = bytes_from_int(instance.pk)
+
+        instance.save()
+
+    if instance.parent and not instance.parent.has_replies:
+        Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
+
+    # set_time(item_id=room_pk, namespace='forum/room', time=instance.last_changed_time)
+    set_time(identifier=f'forum/room:{instance.room.pk}', time=instance.last_changed_time)
+
+
+def write__field__non_editable_single_choice(model, pk):
+    return dict(
+        attrs__style__display='none',
+        editable=False,
+        choices=model.objects.filter(pk=pk) if pk is not None else model.objects.none(),
+        initial=model.objects.get(pk=pk) if pk is not None else None,
+    )
+
+
+@decode_url(Room)
+@unread_handling(Room)
+def write(request, *, room, message_pk=None, unread_data):
     message = get_object_or_none(Message, pk=message_pk)
-    room = get_object_or_404(Room, pk=room_pk)
     parent_pk = request.GET.get('parent')
     parent = get_object_or_404(Message, pk=parent_pk) if parent_pk is not None else None
-    assert parent is None or parent.room_id == room_pk
-
-    def non_editable_single_choice(model, pk):
-        return dict(
-            attrs__style__display='none',
-            editable=False,
-            choices=model.objects.filter(pk=pk) if pk is not None else model.objects.none(),
-            initial=model.objects.get(pk=pk) if pk is not None else None,
-        )
-
-    def on_save(instance, **_):
-        if not instance.path:
-            if instance.parent:
-                instance.path = instance.parent.path + bytes_from_int(instance.pk)
-            else:
-                instance.path = bytes_from_int(instance.pk)
-
-            instance.save()
-
-        if instance.parent and not instance.parent.has_replies:
-            Message.objects.filter(pk=instance.parent.pk).update(has_replies=True)  # Don't use normal save() to avoid the auto_add field update
-
-        # set_time(item_id=room_pk, namespace='forum/room', time=instance.last_changed_time)
-        set_time(identifier=f'forum/room:{room.pk}', time=instance.last_changed_time)
-
-    # noinspection PyShadowingNames
-    def redirect(redirect_to, **_):
-        return HttpResponseRedirect(room.get_absolute_url() + f'?time={request.GET["time"]}#first_new')
+    assert parent is None or parent.room_id == room.pk
 
     if message_pk:
         form = Form.edit
@@ -88,19 +87,14 @@ def write(request, room_pk, message_pk=None):
         form = Form.create
 
     class WritePage(Page):
-        header = Fragment(template=Template("""
-            <h1>{{ room }}</h1>
-        
-            <hr>
-        
-            {% if parent %}
-                <table class="listview roomtable">
-                    {% include "forum/message.html" with row=parent %}
-                </table>
-        
-                <hr>
-            {% endif %}
-        """))
+        header = html.h1(lambda room, **_: room.name)
+        hr = html.hr()
+
+        parent_messages = Messages(
+            rows=Message.objects.filter(pk=parent_pk),
+            include=parent is not None,
+            paginator__template=None,
+        )
 
         create = form(
             title=None,
@@ -109,25 +103,21 @@ def write(request, room_pk, message_pk=None):
             auto__instance=message,
             fields=dict(
                 text__label__template='forum/blank.html',
-                parent=non_editable_single_choice(Message, parent_pk),
-                room=non_editable_single_choice(Room, room_pk),
-                user=non_editable_single_choice(User, request.user.pk),
+                parent=write__field__non_editable_single_choice(Message, parent_pk),
+                room=write__field__non_editable_single_choice(Room, room.pk),
+                user=write__field__non_editable_single_choice(User, request.user.pk),
             ),
-            extra__on_save=on_save,
+            extra__on_save=write__on_save,
             extra__is_create=message is None,
-            extra__redirect=redirect,
+            extra__redirect=lambda request, **_: HttpResponseRedirect(room.get_absolute_url() + f'?time={request.GET["time"]}#first_new'),
             extra__room=room,
             extra__parent=parent,
         )
 
-        script = mark_safe("""
-        <script>
-            auto_select();
-        </script>
-        """)
+        script = mark_safe('<script>auto_select();</script>')
 
         def own_evaluate_parameters(self):
-            return dict(page=self, room=room, parent=parent, time=request.GET["time"])
+            return dict(page=self, room=room, parent=parent, time=request.GET["time"], unread_data=unread_data)
 
     return WritePage()
 
@@ -178,6 +168,43 @@ def room__preprocess_rows(rows, table, unread_data, **_):
     return rows
 
 
+class Messages(Table):
+    class Meta:
+        title = None
+        auto__model = Message
+        auto__exclude = ['path']
+        rows = room__rows
+        columns__unread_from_here_href = Column(attr=None, cell__value=room__unread_from_here_href)
+        # Keep backwards compatibility with old (super unsafe!) forum, but use safe markdown for new messages
+        columns__text__cell__format = lambda value, row, **_: pre_format(value) if row.time_created.year > 2015 else pre_format_legacy(value)
+        columns__text__cell__tag = None
+        preprocess_rows = room__preprocess_rows
+        header__template = Template('')
+        row__template = get_template('forum/message.html')
+        row__attrs__class = dict(
+            indent_0=lambda row, **_: row.indent == 0,
+            message=True,
+            current_user=lambda table, row, **_: table.get_request().user == row.user,
+            other_user=lambda table, row, **_: table.get_request().user != row.user,
+            unread=lambda row, unread_data, **_: unread_data.is_unread(row.last_changed_time),
+            unread2=lambda row, unread_data, **_: unread_data.is_unread2(row.last_changed_time),
+        )
+        attrs = dict(
+            cellpadding='0',
+            cellspacing='0',
+            id='first_newtable',
+            align='center',
+            class__roomtable=True,
+        )
+        paginator = dict(
+            min_page_size=10,
+            template='forum/room-footer.html',
+            page=room__get_start_page,
+            show_always=True,
+        )
+        page_size = PAGE_SIZE
+
+
 class RoomPage(Page):
     def __init__(
             self,
@@ -191,41 +218,7 @@ class RoomPage(Page):
 
     header = Fragment(template='forum/room-header.html')
 
-    table = Table(
-        title=None,
-        auto__model=Message,
-        auto__exclude=['path'],
-        rows=room__rows,
-        columns__unread_from_here_href=Column(attr=None, cell__value=room__unread_from_here_href),
-        # Keep backwards compatibility with old (super unsafe!) forum, but use safe markdown for new messages
-        columns__text__cell__format=lambda value, row, **_: pre_format(value) if row.time_created.year > 2015 else pre_format_legacy(value),
-        columns__text__cell__tag=None,
-        preprocess_rows=room__preprocess_rows,
-        header__template=Template(''),
-        row__template=get_template('forum/message.html'),
-        row__attrs__class=dict(
-            indent_0=lambda row, **_: row.indent == 0,
-            message=True,
-            current_user=lambda table, row, **_: table.get_request().user == row.user,
-            other_user=lambda table, row, **_: table.get_request().user != row.user,
-            unread=lambda row, unread_data, **_: unread_data.is_unread(row.last_changed_time),
-            unread2=lambda row, unread_data, **_: unread_data.is_unread2(row.last_changed_time),
-        ),
-        attrs=dict(
-            cellpadding='0',
-            cellspacing='0',
-            id='first_newtable',
-            align='center',
-            class__roomtable=True,
-        ),
-        paginator=dict(
-            min_page_size=10,
-            template='forum/room-footer.html',
-            page=room__get_start_page,
-            show_always=True,
-        ),
-        page_size=PAGE_SIZE,
-    )
+    table = Messages()
 
     hr = html.hr()
 
