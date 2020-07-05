@@ -1,0 +1,8 @@
+Issues
+======
+
+- passive/active issue fields, similar to the hotlist
+- "template" for issues: suggested fields and their order (per project?)
+- how do we do workflow for issues? someone has to be the "one with the ball"
+    - active fields specific for workflow status?
+- user fields could be overlapping bubbles by default or something
