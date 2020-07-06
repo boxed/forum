@@ -101,3 +101,14 @@ function auto_select(e) {
         }
     };
 }
+
+
+function reply(url, id) {
+    let target = document.getElementById("reply-area-" + id);
+    fetch(url).then(response => {
+        return response.text();
+    }).then(data => {
+        target.innerHTML = data;
+        auto_select();
+    })
+}

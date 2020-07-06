@@ -77,7 +77,7 @@ def view_issue(request, project, issue, unread_data):
             }
         )
 
-        comments = RoomPage(room=issue.comments, unread_data=unread_data, room_header_template='forum/blank.html') if issue.comments_id else None
+        comments = RoomPage(room=issue.comments, unread_data=unread_data, parts__header__template='forum/blank.html') if issue.comments_id else None
 
     return IssuePage()
 

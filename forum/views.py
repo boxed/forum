@@ -1,4 +1,9 @@
 from itertools import groupby
+from urllib.parse import (
+    urlparse,
+    parse_qs,
+    urlencode,
+)
 
 from django.http import HttpResponseRedirect
 from django.shortcuts import (
@@ -7,6 +12,7 @@ from django.shortcuts import (
 )
 from django.template import Template
 from django.template.loader import get_template
+from django.urls import reverse
 from django.utils.safestring import mark_safe
 from iommi import (
     Column,
@@ -81,35 +87,34 @@ def write(request, *, room, message_pk=None, unread_data):
     parent = get_object_or_404(Message, pk=parent_pk) if parent_pk is not None else None
     assert parent is None or parent.room_id == room.pk
 
+    def redirect(request, **_):
+        target = urlparse(request.META['HTTP_REFERER'])
+        qs = parse_qs(target.query)
+        qs['time'] = {request.GET["time"]}
+        return HttpResponseRedirect(f'{target.path}?{urlencode(qs, doseq=True)}#first_new')
+
     if message_pk:
         form = Form.edit
     else:
         form = Form.create
 
     class WritePage(Page):
-        header = html.h1(lambda room, **_: room.name)
-        hr = html.hr()
-
-        parent_messages = Messages(
-            rows=Message.objects.filter(pk=parent_pk),
-            include=parent is not None,
-            paginator__template=None,
-        )
-
         create = form(
             title=None,
             auto__include=['text', 'parent', 'room', 'user'],
             auto__model=Message,
             auto__instance=message,
+            attrs__action=request.get_full_path(),
             fields=dict(
                 text__label__template='forum/blank.html',
                 parent=write__field__non_editable_single_choice(Message, parent_pk),
                 room=write__field__non_editable_single_choice(Room, room.pk),
                 user=write__field__non_editable_single_choice(User, request.user.pk),
+                text__input__attrs__style__width='100%',
             ),
             extra__on_save=write__on_save,
             extra__is_create=message is None,
-            extra__redirect=lambda request, **_: HttpResponseRedirect(room.get_absolute_url() + f'?time={request.GET["time"]}#first_new'),
+            extra__redirect=redirect,
             extra__room=room,
             extra__parent=parent,
         )
