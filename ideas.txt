@@ -6,3 +6,5 @@ Issues
 - how do we do workflow for issues? someone has to be the "one with the ball"
     - active fields specific for workflow status?
 - user fields could be overlapping bubbles by default or something
+- tags
+- audit of changes as auto created comments?

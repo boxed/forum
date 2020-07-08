@@ -1,9 +1,11 @@
+from django.utils.html import format_html
 from iommi import (
     Field,
     Form,
     html,
     Page,
     Table,
+    Header,
 )
 from iommi.form import (
     create_object__post_handler,
@@ -43,11 +45,17 @@ def view_project(request, project_name):
 @decode_url(Project, Issue)
 @unread_handling(Issue)
 def view_issue(request, project, issue, unread_data):
-    # TODO: when you write a comment you get redirected to the room, not the issue
     assert issue.project == project
 
     class IssuePage(Page):
-        title = html.h1(issue.name)
+        title = Header(
+            issue.name,
+            children__number=html.span(
+                format_html(f' <a href="{issue.get_absolute_url()}">#{issue.pk}</a>'),
+                after=-1,
+                attrs__class__faded=True,
+            ),
+        )
 
         user_properties = html.ul(
             attrs__class__properties=True,
