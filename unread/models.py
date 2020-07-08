@@ -7,6 +7,20 @@ class Model(models.Model):
     def __repr__(self):
         return f'{type(self)} {self.pk}:{self}'
 
+    def __str__(self):
+        # noinspection PyUnresolvedReferences
+        return self.name
+
+    class Meta:
+        abstract = True
+
+
+# This is what we expect from a thing that can be unread. You don't have to inherit from this class, but you should have these fields (last_changed_by isn't used by the unread app, but it's polite to keep track of)
+class UnreadModel(Model):
+    time_created = models.DateTimeField(auto_now_add=True)
+    last_changed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
+    last_changed_time = models.DateTimeField(auto_now=True)
+
     class Meta:
         abstract = True
 

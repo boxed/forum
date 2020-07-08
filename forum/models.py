@@ -5,6 +5,8 @@ from django.core import validators
 from django.db import models
 from iommi import register_factory
 
+from unread.models import UnreadModel
+
 
 class Model(models.Model):
     def __repr__(self):
@@ -45,17 +47,13 @@ class BinaryField(models.Field):
 register_factory(BinaryField, factory=None)
 
 
-class Message(models.Model):
+class Message(UnreadModel):
     room = models.ForeignKey(Room, on_delete=models.PROTECT, related_name='messages')
     text = models.TextField(blank=True, null=True)
     parent = models.ForeignKey('self', on_delete=models.PROTECT, null=True, blank=True, related_name='replies')
     path = BinaryField(max_length=1000, db_index=True, null=True)
     visible = models.BooleanField(default=True)
     user = models.ForeignKey(User, on_delete=models.PROTECT, related_name='messages')
-    time_created = models.DateTimeField(auto_now_add=True)
-
-    last_changed_by = models.ForeignKey(User, on_delete=models.PROTECT, related_name='+', null=True)
-    last_changed_time = models.DateTimeField(auto_now=True)
 
     has_replies = models.BooleanField(default=False)
 
