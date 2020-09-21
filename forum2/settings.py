@@ -176,6 +176,8 @@ NO_REPLY_EMAIL = 'no-reply@killingar.net'
 
 X_FRAME_OPTIONS = 'sameorigin'
 
+ARCHIVE_PATH = '/storage/'
+
 IOMMI_DEFAULT_STYLE = 'forum'
 
 try:
