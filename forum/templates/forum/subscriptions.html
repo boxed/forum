@@ -41,6 +41,10 @@
         <li><a href="/wiki/">Wiki contexts</a></li>
     </ul>
 
+    <ul class="menu">
+        <li><a href="/archive/">Archive</a></li>
+    </ul>
+
     {% for foo in result %}
         {% include "forum/subscription_group.html" with title=foo.title active=foo.active passive=foo.passive %}
     {% endfor %}
