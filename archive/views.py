@@ -9,7 +9,7 @@ from iommi import (
 )
 
 
-def index(request, path):
+def index(request, path=''):
     assert '..' not in path
     p = Path(settings.ARCHIVE_PATH) / path
     if p.is_file():
