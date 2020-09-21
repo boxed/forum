@@ -1,4 +1,5 @@
 from os import listdir
+from pathlib import Path
 
 from iommi import (
     Column,
@@ -9,5 +10,5 @@ from iommi import (
 def index(request):
     return Table(
         columns__name=Column(),
-        rows=listdir('/storage'),
+        rows=Path('/storage').glob('*'),
     )
