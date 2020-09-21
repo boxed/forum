@@ -53,7 +53,8 @@ urlpatterns = [
     path('error_test/', f2views.error_test),
     path('blank/', f2views.blank),
 
-    path('issues/', include(issues.urls)),
+    path('issues/', include('issues.urls')),
+    path('archive/', include('archive.urls')),
 
     path('iommi-admin/', include(MyAdmin.urls())),
 ]

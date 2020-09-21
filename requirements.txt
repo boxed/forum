@@ -1,5 +1,4 @@
 iommi
-mysqlclient
 pyparsing
 django
 tri.token
@@ -12,3 +11,4 @@ sentry-sdk==0.7.6
 gunicorn
 whitenoise
 mistune==2.0.0a4
+mysqlclient
