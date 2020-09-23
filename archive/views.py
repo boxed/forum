@@ -40,7 +40,7 @@ def index(request, path=''):
         return Table.div(
             rows=sorted(images, key=lambda x: x.name.lower()),
             page_size=None,
-            columns__name=Column(cell__format=lambda row, **_: mark_safe(f'<img src="{row.name}">'))
+            columns__name=Column(cell__format=lambda row, **_: mark_safe(f'<img src="{row.name}" style="max-width: 100%">'))
         )
 
     return Table(
