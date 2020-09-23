@@ -14,6 +14,7 @@ class ForumConfig(AppConfig):
             'forum',
             Style(
                 base,
+                base_template='iommi/base_forum.html',
                 Form__attrs__class__form=True,
                 Field__attrs__class__field=True,
             )

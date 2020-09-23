@@ -1,3 +1,4 @@
+from mimetypes import guess_type
 from pathlib import Path
 
 from django.conf import settings
@@ -6,11 +7,21 @@ from django.utils.safestring import mark_safe
 from iommi import (
     Column,
     Table,
+    Action,
 )
+
+
+def is_image(name):
+    type, _ = guess_type(name)
+    if type is not None and type.startswith('image/'):
+        return True
+    else:
+        return False
 
 
 def index(request, path=''):
     assert '..' not in path
+
     p = Path(settings.ARCHIVE_PATH) / path
     if p.is_file():
         return FileResponse(open(p, 'rb'), filename=p.name)
@@ -19,6 +30,19 @@ def index(request, path=''):
         for x in p.glob('*')
         if not x.name.startswith('.')
     ]
+
+    if request.GET.get('gallery') is not None:
+        images = [
+            x
+            for x in rows
+            if is_image(x)
+        ]
+        return Table.div(
+            rows=sorted(images, key=lambda x: x.name.lower()),
+            page_size=None,
+            columns__name=Column(cell__format=lambda row, **_: mark_safe(f'<img src="{row.name}">'))
+        )
+
     return Table(
         columns=dict(
             icon=Column(
@@ -33,4 +57,5 @@ def index(request, path=''):
         ),
         page_size=None,
         rows=sorted(rows, key=lambda x: x.name.lower()),
+        actions__gallery=Action(attrs__href='?gallery')
     )

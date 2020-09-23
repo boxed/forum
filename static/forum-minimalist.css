@@ -458,3 +458,9 @@ nav ul li {
     display: block;
     width: 100%;
 }
+
+
+.links {
+    float: right;
+    margin-right: 7px;
+}
