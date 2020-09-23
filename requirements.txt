@@ -1,4 +1,4 @@
-iommi
+iommi==2.0.1
 pyparsing
 django
 tri.token
