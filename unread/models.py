@@ -8,8 +8,11 @@ class Model(models.Model):
         return f'{type(self)} {self.pk}:{self}'
 
     def __str__(self):
-        # noinspection PyUnresolvedReferences
-        return self.name
+        try:
+            # noinspection PyUnresolvedReferences
+            return self.name
+        except AttributeError:
+            return ''
 
     class Meta:
         abstract = True
