@@ -34,10 +34,7 @@ def get_times(*, identifiers: List[str]) -> Dict[str, datetime]:
     }
 
 
-def set_time(*, identifier: str = None, time: datetime): #, item_id: Any = None, namespace: str = None):
-    # assert identifier or (item_id and namespace), "Either use the identifier parameter, or both namespace and item_id"
-    # if identifier is None:
-    #     identifier = f'{namespace}:{item_id}'
+def set_time(*, identifier: str = None, time: datetime):
     from .models import SystemTime
     SystemTime.objects.update_or_create(identifier=identifier, defaults=dict(time=time))
 
@@ -165,19 +162,25 @@ class UnreadData:
         return obj_timestamp >= self.unread2_time and not self.is_unread(obj_timestamp)
 
 
+def get_unread_identifier(obj):
+    model = type(obj)
+    model_name = model._meta.verbose_name.replace(' ', '_')
+    module_name = model.__module__.replace('.models', '')
+    return f'{module_name}/{model_name}:{obj.pk}'
+
+
 def unread_handling(model):
     """
     Decorator to handle unread handling. Note that this requires that you've already decoded the model coming in. You can do that with @decode_url.
     """
     model_name = model._meta.verbose_name.replace(' ', '_')
-    module_name = model.__module__.replace('.models', '')
 
     def unread_handling_factory(f):
         @functools.wraps(f)
         def unread_handling_wrapper(request, **kwargs):
             obj = kwargs[model_name]
 
-            unread_identifier = f'{module_name}/{model_name}:{obj.pk}'
+            unread_identifier = get_unread_identifier(obj)
             user_time = get_user_time(user=request.user, identifier=unread_identifier)
 
             if 'time' in request.GET:
