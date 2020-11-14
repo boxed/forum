@@ -1,6 +1,12 @@
 {% load forum %}
 <tr{{ cells.attrs }}>
     <td style="border-left: {{ row.indent_rem }}rem solid white" class="message">
+        <a id="{{ row.id }}"></a>
+
+        {% if row.first_new %}
+            <a id="first_new"></a>
+        {% endif %}
+
         <img class="profile_img" src="{{ row.gravatar_url }}"/>
 
         <a href="#">{{ row.user }}</a>
@@ -10,17 +16,6 @@
 </tr>
 <tr{{ cells.attrs }}>
     <td style="border-left: {{ row.indent_rem }}rem solid white" class="subject">
-        {% if row.first_new %}
-            <a name="first_new"></a>
-        {% endif %}
-        <a name="{{ row.id }}"></a>
-
-        {% if row.first_new %}
-            <a name="first_new" id="first_new"></a>
-        {% endif %}
-
-        <a name="{{ row.id }}"></a>
-
         <span class="tools">
             {% include "forum/bits/reply.html" %}
             {% include "forum/bits/unread_from_here.html" %}

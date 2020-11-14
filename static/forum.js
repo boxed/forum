@@ -110,5 +110,6 @@ function reply(url, id) {
     }).then(data => {
         target.innerHTML = data;
         auto_select();
-    })
+    });
+    return false;
 }
