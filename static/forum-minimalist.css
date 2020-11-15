@@ -471,3 +471,7 @@ nav ul li {
 	position: relative;
 	top: -100px;
 }
+
+a {
+    cursor: pointer;
+}
