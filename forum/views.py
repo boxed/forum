@@ -23,6 +23,7 @@ from iommi import (
     Table,
 )
 from iommi.form import bool_parse
+from iommi.reinvokable import reinvokable
 
 from forum.models import (
     bytes_from_int,
@@ -211,6 +212,7 @@ class Messages(Table):
 
 
 class RoomPage(Page):
+    @reinvokable
     def __init__(
             self,
             room,

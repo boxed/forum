@@ -446,10 +446,17 @@ def decode_url(*models):
             for model in models:
                 model_name = model._meta.verbose_name.replace(' ', '_')
                 pk_key = f'{model_name}_pk'
+
                 if pk_key in kwargs:
-                    decoded_kwargs[model_name] = get_object_or_404(model, pk=kwargs.pop(pk_key))
+                    lookup = dict(pk=kwargs.pop(pk_key))
                 else:
-                    decoded_kwargs[model_name] = get_object_or_404(model, name=kwargs.pop(f'{model_name}_name'))
+                    lookup = dict(name=kwargs.pop(f'{model_name}_name'))
+
+                dependencies = getattr(model, 'decode_url_dependencies', lambda: [])()
+                for dependency in dependencies:
+                    lookup[dependency] = decoded_kwargs[dependency]
+
+                decoded_kwargs[model_name] = get_object_or_404(model, **lookup)
 
             return f(request=request, **decoded_kwargs, **kwargs)
 

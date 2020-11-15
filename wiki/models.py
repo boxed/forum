@@ -33,6 +33,10 @@ class Document(Model):
     class Meta:
         unique_together = ('context', 'name')
 
+    @staticmethod
+    def decode_url_dependencies():
+        return ['context']
+
     def get_absolute_url(self):
         return f'/wiki/{self.context.name}/{self.name}/'
 
