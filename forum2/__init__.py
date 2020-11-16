@@ -13,6 +13,7 @@ from contextlib import contextmanager
 from datetime import date, datetime
 from io import StringIO
 from logging import addLevelName
+from pathlib import Path
 from tempfile import NamedTemporaryFile
 from time import time
 from urllib.parse import quote_plus
@@ -147,6 +148,12 @@ class ProfileMiddleware:
         return response
 
 
+def make_absolute_paths_in_stack_trace(s):
+    cwd = os.getcwd()
+    dirname = Path(cwd).stem
+    return s.replace(f'File "{dirname}', f'File "{cwd}')
+
+
 class LoggingMiddleware:
     """Configure root logger using settings from settings.py
 
@@ -209,7 +216,7 @@ class LoggingMiddleware:
         #         session_context = request.session.get('audit_context', None)
         #         if context and context != session_context:
         #             request.session['audit_context'] = context
-        if get_sql_debug() == 4 and hasattr(request, 'STACKS'):  # hasattr check because process_request might not be called in case of an early redirect
+        if get_sql_debug() == 'worst' and hasattr(request, 'STACKS'):  # hasattr check because process_request might not be called in case of an early redirect
             highscore = sorted([
                 (len(sql_queries), stack_trace, sql_queries)
                 for stack_trace, sql_queries in request.STACKS.items()
@@ -219,7 +226,7 @@ class LoggingMiddleware:
             for count, stack, sql_queries in highscore[-number_of_offenders:]:
                 if count > 3:  # 2 times is ok-ish, more is suspicious
                     sql_debug('------ %s times: -------' % count, bold=True)
-                    sql_debug(stack, sql_trace=True)
+                    sql_debug(make_absolute_paths_in_stack_trace(stack), sql_trace=True)
                     sql_queries = set(sql_queries)
                     query_cutoff = 3
                     for x in list(sql_queries)[:query_cutoff]:
@@ -292,7 +299,6 @@ def no_sql_debug():
 
 def sql_debug(msg, **kwargs):
     if get_sql_debug():
-        #log.log(level=logging.INFO, msg=msg, **kwargs)
         print(msg)
 
 
@@ -304,7 +310,7 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
         else:
             msg = re.sub(r'[\x00-\x08\x0b-\x1f\x80-\xff]', '.', msg)
 
-        if get_sql_debug() != 4:
+        if get_sql_debug() != 'worst':
             sql_debug(msg, sql=True, read_only=self.db.alias == 'read-only')
         return msg
 
@@ -357,16 +363,15 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
         return stack
 
     def execute(self, sql, params=None):
-        if get_sql_debug() >= 3:
+        if get_sql_debug() == 'worst':
             frame = sys._getframe().f_back
             while "django/db" in frame.f_code.co_filename:
                 frame = frame.f_back
             stack = self.format_stack_trace(frame)
 
-            if get_sql_debug() != 4:
+            if get_sql_debug() != 'worst':
                 sql_debug("STACK: ===>\n" + stack, sql_trace=True)
 
-        if get_sql_debug() >= 1:
             # convert to utf-8, by some means
             trace_sql = sql
             if params:
@@ -374,7 +379,7 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
             msg = self.trace_sql(trace_sql)
             using_db = self.db.alias
 
-            if get_sql_debug() == 4 and get_current_request():
+            if get_sql_debug() == 'worst' and get_current_request():
                 get_current_request().STACKS[stack].append(msg)
                 get_current_request().DB_USING_COUNTS[using_db] += 1
 
@@ -383,13 +388,7 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
             return super().execute(sql, params)
         finally:
             stop = time()
-            if 3 <= get_sql_debug() < 4:
-                sql_debug('Found Rows: %d' % self.cursor.rowcount, sql=True)
-            if 1 <= get_sql_debug() < 4:
-                sql_time = stop - start
-                self.trace_time(sql_time)
-                self.trace_total_sql_time(sql_time)
-            elif get_sql_debug() >= 2:
+            if get_sql_debug() == 'worst':
                 if params:
                     sql %= safe_unicode_literal(self.cursor, params)
                 self.db.queries.append({
@@ -414,13 +413,6 @@ class CursorDebugWrapper(django_db_utils.CursorWrapper):
             return super().executemany(sql, param_list)
         finally:
             stop = time()
-            if get_sql_debug() == 1:
-                self.trace_time(stop - start)
-            elif get_sql_debug() == 2:
-                self.db.queries.append({
-                    'sql': '%s times: %s' % (len(param_list), sql),
-                    'time': "%.3f" % (stop - start),
-                })
             if getattr(settings, "SQL_TIMING", False):
                 self.db.queries.append({
                     'sql': sql,

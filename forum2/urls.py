@@ -34,6 +34,7 @@ urlpatterns = [
     path('login/', forum2.views.login),
     path('welcome/', forum2.views.welcome),
     path('logout/', forum2.views.logout),
+    path('test_n_plus_1/', forum2.views.test_n_plus_1),
     path('subscriptions/', views.subscriptions),
     path('rooms/', views.rooms),
     path('rooms/<int:room_pk>/', views.view_room),

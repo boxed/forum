@@ -108,3 +108,10 @@ def login(request):
         set_focus = html.script(mark_safe('document.getElementById("id_username").focus();'))
 
     return LoginPage()
+
+
+def test_n_plus_1(request):
+    from forum.models import Message
+    for message in Message.objects.all():
+        message.room
+    return HttpResponse('')
