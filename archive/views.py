@@ -21,7 +21,7 @@ def is_image(name):
 
 def index(request, path=''):
     p = (Path(settings.ARCHIVE_PATH) / path).absolute()
-    assert str(p).startswith(settings.ARCHIVE_PATH)
+    assert str(p).startswith(str(Path(settings.ARCHIVE_PATH).absolute()))
 
     if p.is_file():
         return FileResponse(open(p, 'rb'), filename=p.name)
