@@ -13,15 +13,12 @@ from iommi import (
 
 def is_image(name):
     type, _ = guess_type(name)
-    if type is not None and type.startswith('image/'):
-        return True
-    else:
-        return False
+    return type is not None and type.startswith('image/')
 
 
 def index(request, path=''):
     p = (Path(settings.ARCHIVE_PATH) / path).absolute()
-    assert str(p).startswith(str(Path(settings.ARCHIVE_PATH).absolute()))
+    assert str(p).startswith(str(Path(settings.ARCHIVE_PATH).absolute())), 'Someone is trying to hack the site'
 
     if p.is_file():
         return FileResponse(open(p, 'rb'), filename=p.name)
