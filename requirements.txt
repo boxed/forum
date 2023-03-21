@@ -7,7 +7,7 @@ pyyaml
 ua-parser
 user-agents
 django-user-agents
-sentry-sdk==0.7.6
+sentry-sdk==1.14.0
 gunicorn
 whitenoise
 mistune==2.0.3
